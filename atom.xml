@@ -4,7 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungnh.github.io/atom.xml" rel="self"/>
   <link href="http://tungnh.github.io/"/>
-  <updated>2015-08-06T17:07:37+07:00</updated>
+  <updated>2015-08-06T17:09:16+07:00</updated>
   <id>http://tungnh.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -18,9 +18,7 @@
     <link href="http://tungnh.github.io/blog/2015/08/06/first-post/"/>
     <updated>2015-08-06T16:15:43+07:00</updated>
     <id>http://tungnh.github.io/blog/2015/08/06/first-post</id>
-    <content type="html"><![CDATA[<h1>Title</h1>
-
-<h2>content</h2>
+    <content type="html"><![CDATA[<blockquote><p>Hello octopress, ruby, rake, markdown, blogging !</p></blockquote>
 ]]></content>
   </entry>
   
