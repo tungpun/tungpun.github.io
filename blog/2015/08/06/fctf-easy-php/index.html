@@ -5,11 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Blog Archive - punMag</title>
+  <title>FCTF Easy PHP - punMag</title>
   <meta name="author" content="Tung Pun">
 
   
-  <meta name="description" content=" 2015 FCTF Easy PHP First Post ">
+  <meta name="description" content="Last week, when fed my brain with CTF, i faced a web challenge. Luckily, with the help from my friend, i solved it.
+This challenge may be easy, but &hellip;">
   
 
   <meta name="HandheldFriendly" content="True">
@@ -17,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
   
-  <link rel="canonical" href="http://tungnh.github.io/blog/archives">
+  <link rel="canonical" href="http://tungnh.github.io/blog/2015/08/06/fctf-easy-php">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="punMag" type="application/atom+xml">
@@ -83,35 +84,103 @@
   </div>
   <div id="main">
     <div class="content">
-      <article role="article">
+      <article class="hentry" role="article">
   
-  <header>
-    <div class="back"><a href="/" onclick="history.go(-1);return false;">← Back</a></div>
-    <h1 class="entry-title">Blog Archive</h1>
-  </header>
   
-  <div class="entry-content"><div id="blog-archives">
-
-
-
+    <header>
+      <div class="back"><a href="/" onclick="history.go(-1);return false;">← Back</a></div>
+      <h1 class="entry-title">FCTF Easy PHP</h1>
+    </header>
   
-  <h2>2015</h2>
+  <div class="entry-content"><p>Last week, when fed my brain with CTF, i faced a web challenge. Luckily, with the help from my friend, i solved it.
+This challenge may be easy, but with me, it is interesting and i studied something about this. So, tonight, i spend my gaming time to explain about this.</p>
 
-<article>
-  <h2 class="entry-title"><a href="/blog/2015/08/06/fctf-easy-php/">FCTF Easy PHP</a></h2>
+<p>My English is terrible, however, i will try with my best.</p>
 
-</article>
+<p>This challenge give us the url to the page which have written by php. For personal reason, i doesnt show it here.
+After viewing source, i found the php code.</p>
 
+<pre><code class="php">&lt;?php
 
+    function h($s){return htmlspecialchars($s,ENT_QUOTES,'UTF-8');}
+    function crc32_string($v){return sprintf("%08x", crc32($v) &amp; 0xffffffff);}
 
-<article>
-  <h2 class="entry-title"><a href="/blog/2015/08/06/first-post/">First Post</a></h2>
+    $value = (isset($_POST['value']) &amp;&amp; is_string($_POST['value'])) ? $_POST['value'] : '';
 
-</article>
+    $flag = ($value !== "" &amp;&amp; $value !== "ecTmZcC" &amp;&amp; crc32_string($value) == crc32_string('ecTmZcC')) ? 'CENSORED': 'bad value';
+?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;For PHP Expert&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;p&gt;
+       PHP is a magic language &amp;lt;3. &lt;br&gt;Enter a good value and I'll give you flag ;)
+    &lt;/p&gt;
+    &lt;form method="POST"&gt;
+      &lt;div&gt;Value: &lt;input type="text" name="value" value="&lt;?php echo h($value); ?&gt;"&gt;&lt;/div&gt;
+      &lt;br&gt;
+      &lt;div&gt;&lt;input type="submit" value="Submit"&gt;&lt;/div&gt;
+    &lt;/form&gt;
+    &lt;br&gt;
+    &lt;?php echo $flag ?&gt;
+  &lt;/body&gt;
+  &lt;!-- magic.phps --&gt;
+&lt;/html&gt;
+</code></pre>
 
+<p>As you see, to solve this challenge, we have to find a <em>value</em> , which is not &lsquo;ecTmZcC&rsquo; <code>and</code> its crc32 is equal to ~ecTmZcC~ :|</p>
+
+<p>Seem like crazy ? right</p>
+
+<p>Or you can think more positive: is something wrong with  ~==~</p>
 </div>
-</div>
+  <footer>
+    <div class="articlemeta">
+      <span class="hide">
+        
+
+ @
+        
+
+
+
+
+
+
+
+
   
+
+
+<time datetime="2015-08-06T20:49:02+07:00" pubdate data-updated="true"></time>
+      </span>
+      <span class="plus">
+        
+          <a href="#">+</a>
+        
+      </span>
+    </div>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://tungnh.github.io/blog/2015/08/06/fctf-easy-php/" data-via="" data-counturl="http://tungnh.github.io/blog/2015/08/06/fctf-easy-php/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <div class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/08/06/first-post/" title="Previous Post: first post">&laquo; first post</a>
+      
+    </div>
+  </footer>
+
+
 </article>
 
 

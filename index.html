@@ -9,7 +9,7 @@
   <meta name="author" content="Tung Pun">
 
   
-  <meta name="description" content=" 　 punMag about pwnable, coding, crypto.. and something else First Post Hello octopress, ruby, rake, markdown, blogging ! ">
+  <meta name="description" content="　 punMag about pwnable, coding, crypto.. and something else FCTF Easy PHP Last week, when fed my brain with CTF, i faced a web challenge. Luckily, &hellip;">
   
 
   <meta name="HandheldFriendly" content="True">
@@ -64,6 +64,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/08/06/fctf-easy-php/">FCTF Easy PHP</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/08/06/first-post/">First Post</a>
       </li>
     
@@ -98,12 +102,67 @@
     
   
   <li class="entry first-entry">
-    <h2 class="entry-title"><a href="/blog/2015/08/06/first-post/">First Post</a></h2>
+    <h2 class="entry-title"><a href="/blog/2015/08/06/fctf-easy-php/">FCTF Easy PHP</a></h2>
     
-      <div class="entry-content"><blockquote><p>Hello octopress, ruby, rake, markdown, blogging !</p></blockquote>
+      <div class="entry-content"><p>Last week, when fed my brain with CTF, i faced a web challenge. Luckily, with the help from my friend, i solved it.
+This challenge may be easy, but with me, it is interesting and i studied something about this. So, tonight, i spend my gaming time to explain about this.</p>
+
+<p>My English is terrible, however, i will try with my best.</p>
+
+<p>This challenge give us the url to the page which have written by php. For personal reason, i doesnt show it here.
+After viewing source, i found the php code.</p>
+
+<pre><code class="php">&lt;?php
+
+    function h($s){return htmlspecialchars($s,ENT_QUOTES,'UTF-8');}
+    function crc32_string($v){return sprintf("%08x", crc32($v) &amp; 0xffffffff);}
+
+    $value = (isset($_POST['value']) &amp;&amp; is_string($_POST['value'])) ? $_POST['value'] : '';
+
+    $flag = ($value !== "" &amp;&amp; $value !== "ecTmZcC" &amp;&amp; crc32_string($value) == crc32_string('ecTmZcC')) ? 'CENSORED': 'bad value';
+?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;For PHP Expert&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;p&gt;
+       PHP is a magic language &amp;lt;3. &lt;br&gt;Enter a good value and I'll give you flag ;)
+    &lt;/p&gt;
+    &lt;form method="POST"&gt;
+      &lt;div&gt;Value: &lt;input type="text" name="value" value="&lt;?php echo h($value); ?&gt;"&gt;&lt;/div&gt;
+      &lt;br&gt;
+      &lt;div&gt;&lt;input type="submit" value="Submit"&gt;&lt;/div&gt;
+    &lt;/form&gt;
+    &lt;br&gt;
+    &lt;?php echo $flag ?&gt;
+  &lt;/body&gt;
+  &lt;!-- magic.phps --&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>As you see, to solve this challenge, we have to find a <em>value</em> , which is not &lsquo;ecTmZcC&rsquo; <code>and</code> its crc32 is equal to ~ecTmZcC~ :|</p>
+
+<p>Seem like crazy ? right</p>
+
+<p>Or you can think more positive: is something wrong with  ~==~</p>
 </div>
       
       
+    
+  </li>
+  
+
+
+  
+    
+    
+    
+  
+  <li class="entry ">
+    <h2 class="entry-title"><a href="/blog/2015/08/06/first-post/">First Post</a></h2>
     
   </li>
   
