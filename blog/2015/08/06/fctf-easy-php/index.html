@@ -100,42 +100,71 @@ This challenge may be easy, but with me, it is interesting and i studied somethi
 <p>This challenge give us the url to the page which have written by php. For personal reason, i doesnt show it here.
 After viewing source, i found the php code.</p>
 
-<pre><code class="php">&lt;?php
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;?php
+</span><span class='line'>
+</span><span class='line'>    function h($s){return htmlspecialchars($s,ENT_QUOTES,'UTF-8');}
+</span><span class='line'>    function crc32_string($v){return sprintf("%08x", crc32($v) & 0xffffffff);}
+</span><span class='line'>
+</span><span class='line'>    $value = (isset($_POST['value']) && is_string($_POST['value'])) ? $_POST['value'] : '';
+</span><span class='line'>
+</span><span class='line'>    $flag = ($value !== "" && $value !== "ecTmZcC" && crc32_string($value) == crc32_string('ecTmZcC')) ? 'CENSORED': 'bad value';
+</span><span class='line'>?&gt;
+</span><span class='line'>&lt;!DOCTYPE html&gt;
+</span><span class='line'>&lt;html&gt;
+</span><span class='line'>  &lt;head&gt;
+</span><span class='line'>    &lt;meta charset="utf-8"&gt;
+</span><span class='line'>    &lt;title&gt;For PHP Expert&lt;/title&gt;
+</span><span class='line'>  &lt;/head&gt;
+</span><span class='line'>  &lt;body&gt;
+</span><span class='line'>    &lt;p&gt;
+</span><span class='line'>       PHP is a magic language &lt;3. &lt;br&gt;Enter a good value and I'll give you flag ;)
+</span><span class='line'>    &lt;/p&gt;
+</span><span class='line'>    &lt;form method="POST"&gt;
+</span><span class='line'>      &lt;div&gt;Value: &lt;input type="text" name="value" value="&lt;?php echo h($value); ?&gt;"&gt;&lt;/div&gt;
+</span><span class='line'>      &lt;br&gt;
+</span><span class='line'>      &lt;div&gt;&lt;input type="submit" value="Submit"&gt;&lt;/div&gt;
+</span><span class='line'>    &lt;/form&gt;
+</span><span class='line'>    &lt;br&gt;
+</span><span class='line'>    &lt;?php echo $flag ?&gt;
+</span><span class='line'>  &lt;/body&gt;
+</span><span class='line'>  &lt;!-- magic.phps --&gt;
+</span><span class='line'>&lt;/html&gt;</span></code></pre></td></tr></table></div></figure>
 
-    function h($s){return htmlspecialchars($s,ENT_QUOTES,'UTF-8');}
-    function crc32_string($v){return sprintf("%08x", crc32($v) &amp; 0xffffffff);}
 
-    $value = (isset($_POST['value']) &amp;&amp; is_string($_POST['value'])) ? $_POST['value'] : '';
-
-    $flag = ($value !== "" &amp;&amp; $value !== "ecTmZcC" &amp;&amp; crc32_string($value) == crc32_string('ecTmZcC')) ? 'CENSORED': 'bad value';
-?&gt;
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;meta charset="utf-8"&gt;
-    &lt;title&gt;For PHP Expert&lt;/title&gt;
-  &lt;/head&gt;
-  &lt;body&gt;
-    &lt;p&gt;
-       PHP is a magic language &amp;lt;3. &lt;br&gt;Enter a good value and I'll give you flag ;)
-    &lt;/p&gt;
-    &lt;form method="POST"&gt;
-      &lt;div&gt;Value: &lt;input type="text" name="value" value="&lt;?php echo h($value); ?&gt;"&gt;&lt;/div&gt;
-      &lt;br&gt;
-      &lt;div&gt;&lt;input type="submit" value="Submit"&gt;&lt;/div&gt;
-    &lt;/form&gt;
-    &lt;br&gt;
-    &lt;?php echo $flag ?&gt;
-  &lt;/body&gt;
-  &lt;!-- magic.phps --&gt;
-&lt;/html&gt;
-</code></pre>
-
-<p>As you see, to solve this challenge, we have to find a <em>value</em> , which is not &lsquo;ecTmZcC&rsquo; <code>and</code> its crc32 is equal to ~ecTmZcC~ :|</p>
+<p>As you see, to solve this challenge, we have to find a <code>value</code> , which is not <code>ecTmZcC</code> and its crc32 is equal to <code>ecTmZcC</code> :|</p>
 
 <p>Seem like crazy ? right</p>
 
-<p>Or you can think more positive: is something wrong with  ~==~</p>
+<p>Or you can think more positive: is something wrong with  <code>==</code> in php (php is famous for that). The key is <a href="" title="https://blog.whitehatsec.com/magic-hashes/">Magic Hash</a></p>
 </div>
   <footer>
     <div class="articlemeta">
