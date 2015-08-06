@@ -93,12 +93,14 @@ This challenge may be easy, but &hellip;">
     </header>
   
   <div class="entry-content"><p>Last week, when fed my brain with CTF, i faced a web challenge. Luckily, with the help from my friend, i solved it.
-This challenge may be easy, but with me, it is interesting and i studied something about this. So, tonight, i spend my gaming time to explain about this.</p>
+This challenge may be easy, but with me, it is interesting and i studied something. So, tonight, i spend my gaming time to explain about this.</p>
 
 <p>My English is terrible, however, i will try with my best.</p>
 
-<p>This challenge give us the url to the page which have written by php. For personal reason, i doesnt show it here.
-After viewing source, i found the php code.</p>
+<p>This challenge give us the url to the web page which have written by php. For personal reason, i can&rsquo;t show it here.</p>
+
+<p>Here we go,
+after viewing source, i found the piece of backend code:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -160,11 +162,74 @@ After viewing source, i found the php code.</p>
 </span><span class='line'>&lt;/html&gt;</span></code></pre></td></tr></table></div></figure>
 
 
-<p>As you see, to solve this challenge, we have to find a <code>value</code> , which is not <code>ecTmZcC</code> and its crc32 is equal to <code>ecTmZcC</code> :|</p>
+<p>As you see, to solve this challenge, we have to find a <code>value</code> , which is not <code>ecTmZcC</code> but its crc32 is equal to <code>ecTmZcC</code> :|</p>
 
-<p>Seem like crazy ? right</p>
+<p>Seem like crazy, right ?</p>
 
-<p>Or you can think more positive: is something wrong with  <code>==</code> in php (php is famous for that). The key is <a href="" title="https://blog.whitehatsec.com/magic-hashes/">Magic Hash</a></p>
+<p>Or you can think more positive: is something wrong with  <code>==</code> in php (php is famous for that) ?
+The key is <a href="https://blog.whitehatsec.com/magic-hashes/">Magic Hash</a></p>
+
+<p><code>ecTmZcC</code>&rsquo;s crc32 is <code>0e730435</code>. So, we must calculate a value which has crc32 hash similar &lsquo;0eXXXXXX&rsquo; (X is numeric).</p>
+
+<p>I wrote a Python script to find it.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>!#/usr/bin/python2.7
+</span><span class='line'>import binascii
+</span><span class='line'>
+</span><span class='line'>def CRC32(buf):    
+</span><span class='line'>    buf = (binascii.crc32(buf) & 0xFFFFFFFF)
+</span><span class='line'>    return "%08X" % buf
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>def chk(s, p):
+</span><span class='line'>  if s[:2] != p:
+</span><span class='line'>      return False
+</span><span class='line'>  for c in s[2:]:
+</span><span class='line'>      if '0' &lt;= c &lt;= '9':
+</span><span class='line'>          ok = 1
+</span><span class='line'>      else:
+</span><span class='line'>          return False
+</span><span class='line'>  return True
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>  pattern = CRC32('ecTmZcC')[:2]  # 0e
+</span><span class='line'>  i = 0
+</span><span class='line'>  while True:
+</span><span class='line'>      if chk(CRC32(str(i)), pattern):         
+</span><span class='line'>          print 'value:', i
+</span><span class='line'>          break   
+</span><span class='line'>      i += 1      </span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally, we have the answer: <strong>6586</strong> and got flag :D</p>
 </div>
   <footer>
     <div class="articlemeta">
