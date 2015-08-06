@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
+  <title><![CDATA[punMag]]></title>
   <link href="http://tungnh.github.io/atom.xml" rel="self"/>
   <link href="http://tungnh.github.io/"/>
-  <updated>2015-08-06T16:59:07+07:00</updated>
+  <updated>2015-08-06T17:04:34+07:00</updated>
   <id>http://tungnh.github.io/</id>
   <author>
-    <name><![CDATA[Your Name]]></name>
+    <name><![CDATA[Tung Pun]]></name>
     
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
@@ -18,7 +18,9 @@
     <link href="http://tungnh.github.io/blog/2015/08/06/first-post/"/>
     <updated>2015-08-06T16:15:43+07:00</updated>
     <id>http://tungnh.github.io/blog/2015/08/06/first-post</id>
-    <content type="html"><![CDATA[<h1>Hello</h1>
+    <content type="html"><![CDATA[<h1>Title</h1>
+
+<h2>content</h2>
 ]]></content>
   </entry>
   
