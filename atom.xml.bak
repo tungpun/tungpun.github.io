@@ -4,7 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungnh.github.io/atom.xml" rel="self"/>
   <link href="http://tungnh.github.io/"/>
-  <updated>2015-08-06T23:13:28+07:00</updated>
+  <updated>2015-08-07T01:18:14+07:00</updated>
   <id>http://tungnh.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[FCTF Easy PHP]]></title>
+    <title type="html"><![CDATA[FCTF Easy PHP Writeup]]></title>
     <link href="http://tungnh.github.io/blog/2015/08/06/fctf-easy-php/"/>
     <updated>2015-08-06T20:49:02+07:00</updated>
     <id>http://tungnh.github.io/blog/2015/08/06/fctf-easy-php</id>
@@ -88,7 +88,7 @@ after viewing source, i found the piece of backend code:</p>
 </span><span class='line'>&lt;/html&gt;</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 
-<p>As you see, to solve this challenge, we have to find a <code>value</code> , which is not <code>ecTmZcC</code> but its crc32 is equal to <code>ecTmZcC</code>&rsquo;s crc32' :|</p>
+<p>As you see, to solve this challenge, we have to find a <code>value</code> , which is not <code>ecTmZcC</code> but its crc32 is equal to <code>ecTmZcC</code>&rsquo;s crc32 :|</p>
 
 <p>Seem like crazy, right ?</p>
 
