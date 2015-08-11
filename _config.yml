@@ -2,10 +2,10 @@
 #      Main Configs       #
 # ----------------------- #
 
-url: http://yoursite.com
-title: My Octopress Blog
-subtitle: A blogging framework for hackers.
-author: Your Name
+url: http://tungnh.github.io
+title: punMag
+subtitle: about pwnable, coding, crypto and something else
+author: Tung Pun
 simple_search: https://www.google.com/search
 description:
 
@@ -39,7 +39,7 @@ rdiscount:
     - autolink
     - footnotes
     - smart
-highlighter: pygments # default python pygments have been replaced by pygments.rb
+highlighter: rouge #pygments # default python pygments have been replaced by pygments.rb
 
 paginate: 10          # Posts per page on the blog index
 paginate_path: "posts/:num"  # Directory base for pagination URLs eg. /posts/2/
