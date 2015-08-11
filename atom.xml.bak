@@ -4,7 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungnh.github.io/atom.xml" rel="self"/>
   <link href="http://tungnh.github.io/"/>
-  <updated>2015-08-11T00:54:38+00:00</updated>
+  <updated>2015-08-11T15:19:27+00:00</updated>
   <id>http://tungnh.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -12,6 +12,61 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Hello Pwnable, Protostar Stack0~5]]></title>
+    <link href="http://tungnh.github.io/blog/2015/08/11/hello-pwnable/"/>
+    <updated>2015-08-11T11:53:34+00:00</updated>
+    <id>http://tungnh.github.io/blog/2015/08/11/hello-pwnable</id>
+    <content type="html"><![CDATA[<p>On my summer holiday, I have spent a couple of day to learn pwnable at  <a href="https://exploit-exercises.com/protostar/">protostar</a> where has interesting challenges. With newbie, i believe that if you try to follow from Stack 0 to Stack 5 (i wanna more, but now i haven&rsquo;t finished all of them), you will got steady base about Stack and have plan to dig deeper for the Buffer over Flow technique in the future.</p>
+
+<p>If you read my previous articles, you know my English is too terrible. I will try with my best, and blogging is one of the my efforts to improve that.</p>
+
+<p>Here we go,</p>
+
+<p>First (easiest, too) level is Stack 0. They&rsquo;ve given us a piece of code:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int modified;
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  modified = 0;
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>
+</span><span class='line'>  if(modified != 0) {
+</span><span class='line'>      printf("you have changed the 'modified' variable\n");
+</span><span class='line'>  } else {
+</span><span class='line'>      printf("Try again?\n");
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Our goal is modify <code>modified</code>&rsquo;s value through <code>gets(buffer)</code> function. &ldquo;Sound fabulous, how can i change this variable&rsquo;s value when i cant touch it ?&rdquo;. However, when you use <a href="http://www.gnu.org/software/gdb/">gdb</a> to debug that file, you will recognize that <code>buffer</code>&rsquo;s address is just below <code>modified</code>&rsquo;s address in STACK. So, if we overload the <code>buffer</code>, the leftover will overwrite <code>modified</code> => the payload we need in this level is a string contains 70 * &lsquo;A&rsquo; (try more if you want).</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[FCTF White Steganography Writeup]]></title>
