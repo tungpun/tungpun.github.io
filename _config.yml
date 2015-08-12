@@ -2,12 +2,12 @@
 #      Main Configs       #
 # ----------------------- #
 
-url: http://tungnh.github.io
+url: http://tungpun.github.io
 title: punMag
 subtitle: about pwnable, coding, crypto and something else
 author: Tung Pun
 simple_search: https://www.google.com/search
-description:
+description: punMag
 
 # Default date format is "ordinal" (resulting in "July 22nd 2007")
 # You can customize the format as defined in
