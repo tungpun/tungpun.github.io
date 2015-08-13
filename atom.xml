@@ -4,7 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungpun.github.io/atom.xml" rel="self"/>
   <link href="http://tungpun.github.io/"/>
-  <updated>2015-08-13T19:49:30+00:00</updated>
+  <updated>2015-08-13T19:55:00+00:00</updated>
   <id>http://tungpun.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -63,43 +63,39 @@ Do you wanna something like:</p>
 <span class='line-number'>40</span>
 <span class='line-number'>41</span>
 <span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>                 .,*/////*.                               &&&%&&%#*.
-</span><span class='line'>        .#&%&%&%&&%%%&&%%%&&&&&&&&&(                      &&%%%%&&%&&%&(
-</span><span class='line'>    (&%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%&*                 &&%%%%%%%%%&&
-</span><span class='line'> %&&%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%&(              &&%%%%%%%%%%(
-</span><span class='line'>  .&&%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%&&&            &&%%%%%%%%%&
-</span><span class='line'> &&%%%%&&&&%&%%%%&&&&%%%%%%%%%%%%%%%%%%%%%%%%%%%%&&&          &&%%%%%%%&&/
-</span><span class='line'>%%%%%%%%,.,,,*,,.......,,#%%%%%%%%%%%%%%%%%%%%%%%%%%&.        &&%%%%%%%&&
-</span><span class='line'>%%%%%&&&%#*.       %&&&&%%%%%&&&&&&&&%%%%%&&&%%%%%%%&,       &&%%%%%%%&/
-</span><span class='line'>%%%%%%%%%%%&      %&%%%%%&&              (&%%%%%%%%&       &&%%%%%%%&
-</span><span class='line'>%%%%%%%%%%%%%%&,      &&%%%&&&&%&,    %&&%%&%%%%%%%%%&%      &%%%%%%%&/
-</span><span class='line'>%%%%%%%%%%%%%%%%&      %&%%%%&%/   %%%%%%%%%%%%%%%%%%%%      &%%%%%%%&
-</span><span class='line'>%%%%%%%%%%%%%%%%%%%      &%&&   ,&&&%%%%%%%%%%&&&&%(/**,.    &%%%%%%%/
-</span><span class='line'>%%%%%%%%%%%%%%%%%%&&.     (   #&%%%%%%%%%%%&%*.  ,*************#%%%&&
-</span><span class='line'>%%%%%%%%%%%%%%%%%%%&&%      (&&%%%%%%%&&*  *********************(%/
-</span><span class='line'>%%%%%%%%%%%%%%%%%%%%%&      &%%%%%%%%&&/  ,*****,,,,,,,,,,,,*********
-</span><span class='line'>%%%%%%%%%%%%%%%%%%%%%&      &%%%%%%%&(. .***,,,,,,,,,,,,,,,,,,,,******,
-</span><span class='line'>%%%%%%%%%%%%%%%%%%%%%&      &&%%%%%&*  ***,,,,,*,,,,,,,,,,,,,,,,,,******
-</span><span class='line'>&&%%%%%%%%%%%%%&&.                &*  ***,,,,#%%%#,,,,,,,%%%%,,,,,,******
-</span><span class='line'> &%&%%%%%%%%%%%%&&&&&&&%%%%%%%%%%%/  **,,,,,,,%%%........*%%,,,,,,,,,*****
-</span><span class='line'>   %&%%%%%%%%%%%%%%%%%%%%%%%%%%%%%. ***,,,,,,,,..............,,,,,,,,*****
-</span><span class='line'>  %&%%%%%%%%%%%%%%%%%%%%%%%%&/  **,,,,,,,,................,,,,,,,,*****
-</span><span class='line'>      #&&&&&&&%&%%%%%%%%%%%%&*  **,,#((/*******************//(##,,*****
-</span><span class='line'>            ,(%&&&&&&%&&&&&&%*  **,,#/*.                   .,/(#,,*****
-</span><span class='line'>                             *  **,,#/*.                   .,/(#,,*****
-</span><span class='line'>                              , ***,&&&&&&&&%%%%%%%%%%%%&&&&&&,*****.
-</span><span class='line'>                              /  ***&&&&%%%%%%%%%%%%%%%%%%%&&&&******/
-</span><span class='line'>                               /,,***&&%%%%%%%########%%%%%%%&%******
-</span><span class='line'>                                #..***%%%%%##############%%%%%*****(
-</span><span class='line'>                                 **.***(%#######(((#######%%,*****(
-</span><span class='line'>                                   %*.****(##(((((((((###*******%
-</span><span class='line'>                                     *(,.********************//
-</span><span class='line'>                                  ......*&/*,*************%*......
-</span><span class='line'>                                ..,,******////(#%%%%#(/////******,,..
-</span><span class='line'>                                ..,,,*******////////////********,,,..
-</span><span class='line'>                                   ..............................
+</pre></td><td class='code'><pre><code class=''><span class='line'>
+</span><span class='line'>                              *********                                       
+</span><span class='line'>                         *******      **                                      
+</span><span class='line'>                    *****              **                                     
+</span><span class='line'>               ******       ****        **                                    
+</span><span class='line'>             ****    *                 ***                                    
+</span><span class='line'>           ****              ***   ***     **                                 
+</span><span class='line'>        * ***** ******                      **            ***                 
+</span><span class='line'>       ***            **********      ****   ***         ****                 
+</span><span class='line'>       **                     ****             **       **  *         ********
+</span><span class='line'>         ***                      ***      **  **      **** ***            ***
+</span><span class='line'>         *                           *****    ****   ***    ********          
+</span><span class='line'>         *****                          ***     ***  ***   *** **             
+</span><span class='line'>           **   ******** ***********    ** ***   **  **       **   ****       
+</span><span class='line'>            ****                       **    ***  *  *** *****   *********    
+</span><span class='line'>             **                        **     *****   ***       **************
+</span><span class='line'>            **                        ***    **** *     ****   ***************
+</span><span class='line'>            **                        *        *      *****         **********
+</span><span class='line'>             **                      **     *** *****   **********************
+</span><span class='line'>              **                    **      **   ***********                 *
+</span><span class='line'>                *****              ***  ****               **            *   *
+</span><span class='line'>                     **************   *                     **          ******
+</span><span class='line'>                         **   *******                        ***** ******* ***
+</span><span class='line'>                        **  **************                       *************
+</span><span class='line'>                       ***  * ****** **  **                      *************
+</span><span class='line'>                       **   *******   *****                     **************
+</span><span class='line'>                       **   ** ** ********                     ******* * *****
+</span><span class='line'>                      ******************                       *  ****  ******
+</span><span class='line'>     #TungPun          *****   *******                         ********** ****
+</span><span class='line'>                      **       **   **                         ** ************
+</span><span class='line'> *  *  *  *  ** ** *****************************  **** ***********************
+</span><span class='line'>                   *       ***   **      *************************************
+</span><span class='line'>      **                                 *        **  **** ********** ********
 </span><span class='line'>
 </span><span class='line'>
 </span><span class='line'>:::::::::  :::    ::: ::::    :::     :::     :::::::::   ::::::::  :::    :::
