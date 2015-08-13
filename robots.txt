@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: http://tungnh.github.io/sitemap.xml 
+Sitemap: http://tungpun.github.io/sitemap.xml 

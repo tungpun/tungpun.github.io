@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[punMag]]></title>
-  <link href="http://tungnh.github.io/atom.xml" rel="self"/>
-  <link href="http://tungnh.github.io/"/>
-  <updated>2015-08-11T19:04:57+00:00</updated>
-  <id>http://tungnh.github.io/</id>
+  <link href="http://tungpun.github.io/atom.xml" rel="self"/>
+  <link href="http://tungpun.github.io/"/>
+  <updated>2015-08-13T19:49:30+00:00</updated>
+  <id>http://tungpun.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Have Fun With Linux - Configure Welcome Message]]></title>
-    <link href="http://tungnh.github.io/blog/2015/08/11/have-fun-with-linux-configure-welcome-message/"/>
+    <link href="http://tungpun.github.io/blog/2015/08/11/have-fun-with-linux-configure-welcome-message/"/>
     <updated>2015-08-11T18:53:19+00:00</updated>
-    <id>http://tungnh.github.io/blog/2015/08/11/have-fun-with-linux-configure-welcome-message</id>
+    <id>http://tungpun.github.io/blog/2015/08/11/have-fun-with-linux-configure-welcome-message</id>
     <content type="html"><![CDATA[<p>Have you ever felt boring with your linux server&rsquo;s default message ?
 Do you wanna something like:</p>
 
@@ -119,9 +119,9 @@ All done~ Restart your session and enjoy :D</p>
   
   <entry>
     <title type="html"><![CDATA[Hello Pwnable, Protostar Stack0~5]]></title>
-    <link href="http://tungnh.github.io/blog/2015/08/11/hello-pwnable/"/>
+    <link href="http://tungpun.github.io/blog/2015/08/11/hello-pwnable/"/>
     <updated>2015-08-11T11:53:34+00:00</updated>
-    <id>http://tungnh.github.io/blog/2015/08/11/hello-pwnable</id>
+    <id>http://tungpun.github.io/blog/2015/08/11/hello-pwnable</id>
     <content type="html"><![CDATA[<p>On my summer holiday, I have spent a couple of day to learn pwnable at  <a href="https://exploit-exercises.com/protostar/">protostar</a> where has interesting challenges. With newbie, i believe that if you try to follow from Stack 0 to Stack 5 (i wanna more, but now i haven&rsquo;t finished all of them), you will got steady base about Stack and have plan to dig deeper for the Buffer over Flow technique in the future.</p>
 
 <p>After reading my previous articles, you know my English is too terrible. I will try with my best, and blogging is one of my efforts to improve my English.</p>
@@ -621,9 +621,9 @@ Cuz the execute environment belongs to Little Endiance system, so you must <code
   
   <entry>
     <title type="html"><![CDATA[FCTF White Steganography Writeup]]></title>
-    <link href="http://tungnh.github.io/blog/2015/08/06/fctf-white-steganography-writeup/"/>
+    <link href="http://tungpun.github.io/blog/2015/08/06/fctf-white-steganography-writeup/"/>
     <updated>2015-08-06T18:20:57+00:00</updated>
-    <id>http://tungnh.github.io/blog/2015/08/06/fctf-white-steganography-writeup</id>
+    <id>http://tungpun.github.io/blog/2015/08/06/fctf-white-steganography-writeup</id>
     <content type="html"><![CDATA[<p>In FCTF, there is a stegno challenge. It&rsquo;s quite simple, but, i had lost so this challenge took me about 40 mins.
 This is a reason for me to write about it today.</p>
 
@@ -822,9 +822,9 @@ Now is your time, foremost !</p>
   
   <entry>
     <title type="html"><![CDATA[FCTF Easy PHP Writeup]]></title>
-    <link href="http://tungnh.github.io/blog/2015/08/06/fctf-easy-php/"/>
+    <link href="http://tungpun.github.io/blog/2015/08/06/fctf-easy-php/"/>
     <updated>2015-08-06T13:49:02+00:00</updated>
-    <id>http://tungnh.github.io/blog/2015/08/06/fctf-easy-php</id>
+    <id>http://tungpun.github.io/blog/2015/08/06/fctf-easy-php</id>
     <content type="html"><![CDATA[<p>Last week, when fed my brain with CTF, i faced a web challenge. Luckily, with the help from my friend, i solved it.
 This challenge may be easy, but with me, it is interesting and i studied something. So, tonight, i spend my gaming time to explain about this.</p>
 
@@ -968,9 +968,9 @@ The key is <a href="https://blog.whitehatsec.com/magic-hashes/">Magic Hash</a></
   
   <entry>
     <title type="html"><![CDATA[First Post]]></title>
-    <link href="http://tungnh.github.io/blog/2015/08/06/first-post/"/>
+    <link href="http://tungpun.github.io/blog/2015/08/06/first-post/"/>
     <updated>2015-08-06T09:15:43+00:00</updated>
-    <id>http://tungnh.github.io/blog/2015/08/06/first-post</id>
+    <id>http://tungpun.github.io/blog/2015/08/06/first-post</id>
     <content type="html"><![CDATA[<blockquote><p>Hello octopress, ruby, rake, markdown, blogging !</p></blockquote>
 ]]></content>
   </entry>
