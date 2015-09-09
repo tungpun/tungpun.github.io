@@ -77,6 +77,10 @@ This is a reason for me to &hellip;">
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/">Write Up | MMACTF 2015 - Pwn - RPS</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/08/11/have-fun-with-linux-configure-welcome-message/">Have Fun With Linux - Configure Welcome Message</a>
       </li>
     
@@ -90,10 +94,6 @@ This is a reason for me to &hellip;">
     
       <li class="post">
         <a href="/blog/2015/08/06/fctf-easy-php/">FCTF Easy PHP Writeup</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/08/06/first-post/">First Post</a>
       </li>
     
   </ul>
@@ -119,7 +119,7 @@ This is a reason for me to &hellip;">
   <div class="entry-content"><p>In FCTF, there is a stegno challenge. It&rsquo;s quite simple, but, i had lost so this challenge took me about 40 mins.
 This is a reason for me to write about it today.</p>
 
-<p>I have had a &ldquo;white&rdquo; picture:</p>
+<p>I have a &ldquo;white&rdquo; picture:</p>
 
 <p><img src="http://i.imgur.com/2ukiJIf.png" alt="White" /></p>
 
@@ -179,8 +179,8 @@ This is a reason for me to write about it today.</p>
 
 <p>Nothing to do more with exiftool.</p>
 
-<p>I tried viewing the raw data as hex. Too complicated with a pure white image. Is something injected in that file ? or LSB implemented ?
-To ensure that, these forensics tools like <code>binwalk</code>, <code>foremost</code> and <code>stegsolve</code> could be useful.</p>
+<p>I try viewing the raw data as hex. Too complicated with a pure white image. Is something injected in that file ? or LSB implemented ?
+To ensure that, these forensics tools like <code>binwalk</code>, <code>foremost</code> and <code>stegsolve</code> can be useful.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -196,8 +196,8 @@ To ensure that, these forensics tools like <code>binwalk</code>, <code>foremost<
 </span><span class='line'>91            0x5B            Zlib compressed data, compressed</span></code></pre></td></tr></table></div></figure>
 
 
-<p>I checked zlib compressed data, but it is not what we need.
-Now is your time, foremost !</p>
+<p>I check zlib compressed data, but it is not what we need.
+Now is your time, <code>foremost</code> !</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -207,13 +207,13 @@ Now is your time, foremost !</p>
 </span><span class='line'>|*|</span></code></pre></td></tr></table></div></figure>
 
 
-<p>I also spent ~20mins with StegSolve to ensure that file is not pure white.</p>
+<p>I also spend ~20mins with StegSolve to ensure that file is not pure white.</p>
 
 <p>Anything i have ignored ?</p>
 
 <blockquote><p>Never give up</p></blockquote>
 
-<p>I wrote a piece of code to highlight the pixel which is not pure white (255, 255, 255)</p>
+<p>I write a piece of code to highlight the pixel which is not pure white (255, 255, 255)</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -251,7 +251,7 @@ Now is your time, foremost !</p>
 </span><span class='line'>  f.write(s)  </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Luck me, after openning the out file, i got flag.</p>
+<p>Luck me, after openning the out file, i get flag.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/</loc>
+    <lastmod>2015-09-09T15:14:40+00:00</lastmod>
+  </url>
+  <url>
     <loc>http://tungpun.github.io/blog/2015/08/11/have-fun-with-linux-configure-welcome-message/</loc>
     <lastmod>2015-08-11T18:53:19+00:00</lastmod>
   </url>
