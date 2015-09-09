@@ -81,13 +81,13 @@ I pay attention to `seed` of rand function. Seem like it can be overflowed too :
 
 Using gdb, i have where the name stored in memory
 
-![name's address]()
+![name's address](http://i.imgur.com/VjgdeOA.png)
 
 => `$bp-0x50`
 
 And `...seed`
 
-![seed's address]()
+![seed's address](http://i.imgur.com/j93EyWq.png)
 
 => `$bp-0x20`
 
