@@ -5,15 +5,15 @@ date: 2015-08-06 20:49:02 +0700
 comments: true
 categories: 
 ---
-Last week, when fed my brain with CTF, i faced a web challenge. Luckily, with the help from my friend, i solved it.
-This challenge may be easy, but with me, it is interesting and i studied something. So, tonight, i spend my gaming time to explain about this.
+Last week, when feed my brain with CTF, i face a web challenge. Luckily, with the help from my friend, i solve it.
+This challenge may be easy, but with me, it is interesting and i study something. So, tonight, i spend my gaming time to explain about this.
 
 My English is terrible, however, i will try with my best.
 
 This challenge give us the url to the web page which have written by php. For personal reason, i can't show it here.
 
 Here we go,
-after viewing source, i found the piece of backend code:
+after viewing source, i discover the piece of backend code:
 
 ```
 <?php
@@ -56,7 +56,7 @@ The key is [Magic Hash](https://blog.whitehatsec.com/magic-hashes/)
 
 `ecTmZcC`'s crc32 is `0e730435`. So, we must calculate a value which has crc32 hash similar '0eXXXXXX' (X is numeric).
 
-I wrote a Python script to find it.
+I write a Python script to find it.
 
 ```
 !#/usr/bin/python2.7

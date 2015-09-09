@@ -8,7 +8,7 @@ categories:
 In FCTF, there is a stegno challenge. It's quite simple, but, i had lost so this challenge took me about 40 mins.
 This is a reason for me to write about it today.
 
-I have had a "white" picture:
+I have a "white" picture:
 
 ![White](http://i.imgur.com/2ukiJIf.png)
 
@@ -45,8 +45,8 @@ Image Size                      : 300x150
 
 Nothing to do more with exiftool.
 
-I tried viewing the raw data as hex. Too complicated with a pure white image. Is something injected in that file ? or LSB implemented ?
-To ensure that, these forensics tools like `binwalk`, `foremost` and `stegsolve` could be useful.
+I try viewing the raw data as hex. Too complicated with a pure white image. Is something injected in that file ? or LSB implemented ?
+To ensure that, these forensics tools like `binwalk`, `foremost` and `stegsolve` can be useful.
 
 ```
 ➜  fctf  binwalk 2ukiJIf.png
@@ -57,8 +57,8 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
 91            0x5B            Zlib compressed data, compressed
 ```
 
-I checked zlib compressed data, but it is not what we need.
-Now is your time, foremost !
+I check zlib compressed data, but it is not what we need.
+Now is your time, `foremost` !
 
 ```
 ➜  fctf  foremost -i 2ukiJIf.png
@@ -66,13 +66,13 @@ Processing: 2ukiJIf.png
 |*|
 ```
 
-I also spent ~20mins with StegSolve to ensure that file is not pure white.
+I also spend ~20mins with StegSolve to ensure that file is not pure white.
 
 Anything i have ignored ?
 
 > Never give up
 
-I wrote a piece of code to highlight the pixel which is not pure white (255, 255, 255)
+I write a piece of code to highlight the pixel which is not pure white (255, 255, 255)
 
 ```
 #!/usr/bin/python2.7
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 	f.write(s)	
 ```
 
-Luck me, after openning the out file, i got flag.
+Luck me, after openning the out file, i get flag.
 
 ```
                                                                                                                                                                                                                                                             
