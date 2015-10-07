@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://tungpun.github.io/blog/2015/10/07/dctf-writeup/</loc>
+    <lastmod>2015-10-07T00:56:05+00:00</lastmod>
+  </url>
+  <url>
     <loc>http://tungpun.github.io/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/</loc>
     <lastmod>2015-09-22T15:18:44+00:00</lastmod>
   </url>
