@@ -4,11 +4,7 @@
   <title><![CDATA[punMag]]></title>
   <link href="http://tungpun.github.io/atom.xml" rel="self"/>
   <link href="http://tungpun.github.io/"/>
-<<<<<<< HEAD
   <updated>2016-07-23T18:55:23+07:00</updated>
-=======
-  <updated>2015-12-18T02:45:23+00:00</updated>
->>>>>>> f9b2b014387157886cdc86f3d523e941ac7d5765
   <id>http://tungpun.github.io/</id>
   <author>
     <name><![CDATA[Tung Pun]]></name>
@@ -18,7 +14,6 @@
 
   
   <entry>
-<<<<<<< HEAD
     <title type="html"><![CDATA[ABCTF - Encryption Service - Writeup]]></title>
     <link href="http://tungpun.github.io/blog/2016/07/19/abctf-encryption-service-writeup/"/>
     <updated>2016-07-19T16:27:14+07:00</updated>
@@ -276,11 +271,6 @@ I use my own lib - (punpwn)[<a href="https://github.com/tungpun/punpwn">https://
     <title type="html"><![CDATA[Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups]]></title>
     <link href="http://tungpun.github.io/blog/2015/11/07/svattt2015-qualification/"/>
     <updated>2015-11-07T14:17:10+07:00</updated>
-=======
-    <title type="html"><![CDATA[Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups]]></title>
-    <link href="http://tungpun.github.io/blog/2015/11/07/svattt2015-qualification/"/>
-    <updated>2015-11-07T07:17:10+00:00</updated>
->>>>>>> f9b2b014387157886cdc86f3d523e941ac7d5765
     <id>http://tungpun.github.io/blog/2015/11/07/svattt2015-qualification</id>
     <content type="html"><![CDATA[<p>Sinh viên với An toàn thông tin 2015 là một kì thi cho sinh viên được tổ chức dưới dạng các bài thi CTF kết hợp với những challenge lý thuyết - chúng ta có thể giải được bằng các kĩ thuật recon ;))</p>
 
@@ -423,11 +413,7 @@ http://119.15.167.212:31335/index.html
   <entry>
     <title type="html"><![CDATA[DefCamp CTF 2015 - Writeup]]></title>
     <link href="http://tungpun.github.io/blog/2015/10/07/dctf-writeup/"/>
-<<<<<<< HEAD
     <updated>2015-10-07T07:56:05+07:00</updated>
-=======
-    <updated>2015-10-07T00:56:05+00:00</updated>
->>>>>>> f9b2b014387157886cdc86f3d523e941ac7d5765
     <id>http://tungpun.github.io/blog/2015/10/07/dctf-writeup</id>
     <content type="html"><![CDATA[<p>Last week, Online Qualification of <a href="http://dctf.def.camp/">DefCamp</a> or <a href="http://dctf.def.camp/">DCTF</a> was opened.
 Our team don&rsquo;t have chance to join The Final, however, there are some interesting things (with me at least) to share in this post.</p>
@@ -654,11 +640,7 @@ Convert the result to ascii, i have the name to download next file.</p>
   <entry>
     <title type="html"><![CDATA[Writeup | CSAW CTF 2015 - Pwn - Precision]]></title>
     <link href="http://tungpun.github.io/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/"/>
-<<<<<<< HEAD
     <updated>2015-09-22T22:18:44+07:00</updated>
-=======
-    <updated>2015-09-22T15:18:44+00:00</updated>
->>>>>>> f9b2b014387157886cdc86f3d523e941ac7d5765
     <id>http://tungpun.github.io/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision</id>
     <content type="html"><![CDATA[<pre><code>nc 54.210.15.77 1259
 Updated again!
@@ -824,11 +806,7 @@ Do you remember the gift, which program give us everytime we try to run the bina
   <entry>
     <title type="html"><![CDATA[Write Up | MMACTF 2015 - Pwn - RPS]]></title>
     <link href="http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/"/>
-<<<<<<< HEAD
     <updated>2015-09-09T22:14:40+07:00</updated>
-=======
-    <updated>2015-09-09T15:14:40+00:00</updated>
->>>>>>> f9b2b014387157886cdc86f3d523e941ac7d5765
     <id>http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps</id>
     <content type="html"><![CDATA[<pre><code>Problem
 Win 50 games in a row!
@@ -1116,15 +1094,9 @@ I use this code:</p>
   
   <entry>
     <title type="html"><![CDATA[Have Fun With Linux - Configure Welcome Message]]></title>
-<<<<<<< HEAD
     <link href="http://tungpun.github.io/blog/2015/08/12/have-fun-with-linux-configure-welcome-message/"/>
     <updated>2015-08-12T01:53:19+07:00</updated>
     <id>http://tungpun.github.io/blog/2015/08/12/have-fun-with-linux-configure-welcome-message</id>
-=======
-    <link href="http://tungpun.github.io/blog/2015/08/11/have-fun-with-linux-configure-welcome-message/"/>
-    <updated>2015-08-11T18:53:19+00:00</updated>
-    <id>http://tungpun.github.io/blog/2015/08/11/have-fun-with-linux-configure-welcome-message</id>
->>>>>>> f9b2b014387157886cdc86f3d523e941ac7d5765
     <content type="html"><![CDATA[<p>Have you ever felt boring with your linux server&rsquo;s default message ?
 Do you wanna something like:</p>
 
@@ -1223,11 +1195,7 @@ All done~ Restart your session and enjoy :D</p>
   <entry>
     <title type="html"><![CDATA[Hello Pwnable, Protostar Stack0~5]]></title>
     <link href="http://tungpun.github.io/blog/2015/08/11/hello-pwnable/"/>
-<<<<<<< HEAD
     <updated>2015-08-11T18:53:34+07:00</updated>
-=======
-    <updated>2015-08-11T11:53:34+00:00</updated>
->>>>>>> f9b2b014387157886cdc86f3d523e941ac7d5765
     <id>http://tungpun.github.io/blog/2015/08/11/hello-pwnable</id>
     <content type="html"><![CDATA[<p>On my summer holiday, I have spent a couple of day to learn pwnable at  <a href="https://exploit-exercises.com/protostar/">protostar</a> where has interesting challenges. With newbie, i believe that if you try to follow from Stack 0 to Stack 5 (i wanna more, but now i haven&rsquo;t finished all of them), you will got steady base about Stack and have plan to dig deeper for the Buffer over Flow technique in the future.</p>
 
@@ -1793,15 +1761,9 @@ We should overwrite EIP (using technique from previous challenge) in order to re
   
   <entry>
     <title type="html"><![CDATA[FCTF White Steganography Writeup]]></title>
-<<<<<<< HEAD
     <link href="http://tungpun.github.io/blog/2015/08/07/fctf-white-steganography-writeup/"/>
     <updated>2015-08-07T01:20:57+07:00</updated>
     <id>http://tungpun.github.io/blog/2015/08/07/fctf-white-steganography-writeup</id>
-=======
-    <link href="http://tungpun.github.io/blog/2015/08/06/fctf-white-steganography-writeup/"/>
-    <updated>2015-08-06T18:20:57+00:00</updated>
-    <id>http://tungpun.github.io/blog/2015/08/06/fctf-white-steganography-writeup</id>
->>>>>>> f9b2b014387157886cdc86f3d523e941ac7d5765
     <content type="html"><![CDATA[<p>In FCTF, there is a stegno challenge. It&rsquo;s quite simple, but, i had lost so this challenge took me about 40 mins.
 This is a reason for me to write about it today.</p>
 
@@ -2001,11 +1963,7 @@ Now is your time, <code>foremost</code> !</p>
   <entry>
     <title type="html"><![CDATA[FCTF Easy PHP Writeup]]></title>
     <link href="http://tungpun.github.io/blog/2015/08/06/fctf-easy-php/"/>
-<<<<<<< HEAD
     <updated>2015-08-06T20:49:02+07:00</updated>
-=======
-    <updated>2015-08-06T13:49:02+00:00</updated>
->>>>>>> f9b2b014387157886cdc86f3d523e941ac7d5765
     <id>http://tungpun.github.io/blog/2015/08/06/fctf-easy-php</id>
     <content type="html"><![CDATA[<p>Last week, when feed my brain with CTF, i face a web challenge. Luckily, with the help from my friend, i solve it.
 This challenge may be easy, but with me, it is interesting and i study something. So, tonight, i spend my gaming time to explain about this.</p>
@@ -2151,11 +2109,7 @@ The key is <a href="https://blog.whitehatsec.com/magic-hashes/">Magic Hash</a></
   <entry>
     <title type="html"><![CDATA[First Post]]></title>
     <link href="http://tungpun.github.io/blog/2015/08/06/first-post/"/>
-<<<<<<< HEAD
     <updated>2015-08-06T16:15:43+07:00</updated>
-=======
-    <updated>2015-08-06T09:15:43+00:00</updated>
->>>>>>> f9b2b014387157886cdc86f3d523e941ac7d5765
     <id>http://tungpun.github.io/blog/2015/08/06/first-post</id>
     <content type="html"><![CDATA[<blockquote><p>Hello octopress, ruby, rake, markdown, blogging !</p></blockquote>
 ]]></content>
