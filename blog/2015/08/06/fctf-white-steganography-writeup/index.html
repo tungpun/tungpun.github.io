@@ -1,0 +1,426 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>FCTF White Steganography Writeup - punMag</title>
+  <meta name="author" content="Tung Pun">
+
+  
+  <meta name="description" content="In FCTF, there is a stegno challenge. It&rsquo;s quite simple, but, i had lost so this challenge took me about 40 mins.
+This is a reason for me to &hellip;">
+  
+
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  
+  <link rel="canonical" href="http://tungpun.github.io/blog/2015/08/06/fctf-white-steganography-writeup">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="punMag" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-66338962-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+  
+</head>
+
+<body   >
+  <div id="sidebar_control"></div>
+  <div id="sidebar">
+    <div class="logo">
+       .pM
+    </div>
+    <div class="content hide">
+      <section role="navigation">
+        <header role="banner"><hgroup>
+  <h1><a href="/"><font size="4px">by</font> Tung Pun</a></h1>
+</hgroup>
+
+</header>
+        
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:tungpun.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+
+<hr/>
+<!--<ul class="main-navigation">
+  <li><a href="/">home</a></li>
+  <li><a href="//wg.dotkrnl.com/p/public">public</a></li>
+</ul>
+-->
+
+      </section>
+      
+        <section>
+  <h2>recent</h2>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/11/07/svattt2015-qualification/">Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/10/07/dctf-writeup/">DefCamp CTF 2015 - Writeup</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/">Writeup | CSAW CTF 2015 - Pwn - Precision</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/">Write Up | MMACTF 2015 - Pwn - RPS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/08/11/have-fun-with-linux-configure-welcome-message/">Have Fun With Linux - Configure Welcome Message</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+      
+    </div>
+  </div>
+  <div id="main">
+    <div class="content">
+      <article class="hentry" role="article">
+  
+  
+    <header>
+      <div class="back"><a href="/" onclick="history.go(-1);return false;">← Back</a></div>
+      <h1 class="entry-title">FCTF White Steganography Writeup</h1>
+    </header>
+  
+  <div class="entry-content"><p>In FCTF, there is a stegno challenge. It&rsquo;s quite simple, but, i had lost so this challenge took me about 40 mins.
+This is a reason for me to write about it today.</p>
+
+<p>I have a &ldquo;white&rdquo; picture:</p>
+
+<p><img src="http://i.imgur.com/2ukiJIf.png" alt="White" /></p>
+
+<p>When face a stegano challenge, the first thought in my mind is check metadata.</p>
+
+<p>I used to use <code>exiftool</code>.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  fctf  exiftool 2ukiJIf.png
+</span><span class='line'>ExifTool Version Number         : 9.46
+</span><span class='line'>File Name                       : 2ukiJIf.png
+</span><span class='line'>Directory                       : .
+</span><span class='line'>File Size                       : 1088 bytes
+</span><span class='line'>File Modification Date/Time     : 2015:08:06 22:13:30-04:00
+</span><span class='line'>File Access Date/Time           : 2015:08:06 22:16:43-04:00
+</span><span class='line'>File Inode Change Date/Time     : 2015:08:06 22:16:43-04:00
+</span><span class='line'>File Permissions                : rw-r--r--
+</span><span class='line'>File Type                       : PNG
+</span><span class='line'>MIME Type                       : image/png
+</span><span class='line'>Image Width                     : 300
+</span><span class='line'>Image Height                    : 150
+</span><span class='line'>Bit Depth                       : 8
+</span><span class='line'>Color Type                      : RGB
+</span><span class='line'>Compression                     : Deflate/Inflate
+</span><span class='line'>Filter                          : Adaptive
+</span><span class='line'>Interlace                       : Noninterlaced
+</span><span class='line'>SRGB Rendering                  : Perceptual
+</span><span class='line'>Gamma                           : 2.2
+</span><span class='line'>Pixels Per Unit X               : 3779
+</span><span class='line'>Pixels Per Unit Y               : 3779
+</span><span class='line'>Pixel Units                     : Meters
+</span><span class='line'>Image Size                      : 300x150</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Nothing to do more with exiftool.</p>
+
+<p>I try viewing the raw data as hex. Too complicated with a pure white image. Is something injected in that file ? or LSB implemented ?
+To ensure that, these forensics tools like <code>binwalk</code>, <code>foremost</code> and <code>stegsolve</code> can be useful.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  fctf  binwalk 2ukiJIf.png
+</span><span class='line'>
+</span><span class='line'>DECIMAL       HEXADECIMAL     DESCRIPTION
+</span><span class='line'>--------------------------------------------------------------------------------
+</span><span class='line'>0             0x0             PNG image, 300 x 150, 8-bit/color RGB, non-interlaced
+</span><span class='line'>91            0x5B            Zlib compressed data, compressed</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I check zlib compressed data, but it is not what we need.
+Now is your time, <code>foremost</code> !</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  fctf  foremost -i 2ukiJIf.png
+</span><span class='line'>Processing: 2ukiJIf.png
+</span><span class='line'>|*|</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I also spend ~20mins with StegSolve to ensure that file is not pure white.</p>
+
+<p>Anything i have ignored ?</p>
+
+<blockquote><p>Never give up</p></blockquote>
+
+<p>I write a piece of code to highlight the pixel which is not pure white (255, 255, 255)</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/python2.7
+</span><span class='line'>
+</span><span class='line'>import cv2
+</span><span class='line'>import numpy as np
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>  img = cv2.imread('2ukiJIf.png', 0)  
+</span><span class='line'>  s = ''
+</span><span class='line'>  for x in range(150):
+</span><span class='line'>      for y in range(300):    
+</span><span class='line'>          if img[x][y] != 255:                            
+</span><span class='line'>              s += '+'
+</span><span class='line'>          else:
+</span><span class='line'>              s += ' '
+</span><span class='line'>      s += '\n'
+</span><span class='line'>  f = open("out.txt", "w")
+</span><span class='line'>  f.write(s)  </span></code></pre></td></tr></table></div></figure>
+
+
+<p>Luck me, after openning the out file, i get flag.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                  ++                                                                       ++                                                                                                      ++                                                                   
+</span><span class='line'>                                                  ++                                                                       ++                                                                                                      ++                                                                   
+</span><span class='line'>                                                                          ++                                                                                         ++                                                            ++                                                                   
+</span><span class='line'>                                                                          ++                                                                                         ++                                                            ++                                                                   
+</span><span class='line'>                                                  ++   ++    ++   ++++   +++++           ++++     ++++     ++++            ++   ++++            ++ +++      ++++    +++++            ++++   ++ +++      ++++    ++    ++   +++++++ ++ +++                                                               
+</span><span class='line'>                                                  ++   ++    ++  ++   +   ++            ++   +   ++  ++   ++  ++           ++  ++   +           +++  ++    ++  ++    ++             ++  ++  +++  ++    ++  ++   ++    ++  ++   ++  +++  ++                                                              
+</span><span class='line'>                                                  ++   ++    ++  ++       ++            ++      ++   ++  ++   ++           ++  ++               ++    ++  ++    ++   ++            ++   ++  ++    ++  ++    ++  ++    ++  ++   ++  ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++  +++      ++            +++     ++   ++  ++   ++           ++  +++              ++    ++  ++    ++   ++            ++   ++  ++    ++  ++    ++  ++    ++  ++   ++  ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++   ++++    ++             ++++   +++++++  +++++++           ++   ++++            ++    ++  ++    ++   ++            +++++++  ++    ++  ++    ++  ++    ++  ++   ++  ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++     +++   ++               +++  ++       ++                ++     +++           ++    ++  ++    ++   ++            ++       ++    ++  ++    ++  ++    ++   +++++   ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++      ++   ++                ++  ++       ++                ++      ++           ++    ++  ++    ++   ++            ++       ++    ++  ++    ++  ++    ++  ++       ++    ++                                                             
+</span><span class='line'>                                                  ++    ++  +++  +   ++   ++            +   ++   ++   +   ++   +           ++  +   ++           ++    ++   ++  ++    ++             ++   +  ++    ++   ++  ++    ++  +++   ++++++  ++    ++                                                             
+</span><span class='line'>                                                  ++     +++ ++   ++++     +++           ++++     ++++     ++++            ++   ++++            ++    ++    ++++      +++            ++++   ++    ++    ++++      +++ ++  ++    ++ ++    ++                                                             
+</span><span class='line'>                                                  ++                                                                                                                                                                      ++    ++                                                                      
+</span><span class='line'>                                                  ++                                                                                                                                                                      ++    ++                                                                      
+</span><span class='line'>                                                +++                           +++++++++                          +++++++++            +++++++++                          +++++++++                                         ++++++                                                                       
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                          
+</span><span class='line'>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p></p>
+
+<p>Quite simple, right ? :D</p>
+</div>
+  <footer>
+    <div class="articlemeta">
+      <span class="hide">
+        
+
+ @
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-08-06T18:20:57+00:00" pubdate data-updated="true"></time>
+      </span>
+      <span class="plus">
+        
+          <a href="#">+</a>
+        
+      </span>
+    </div>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://tungpun.github.io/blog/2015/08/06/fctf-white-steganography-writeup/" data-via="tungpun_" data-counturl="http://tungpun.github.io/blog/2015/08/06/fctf-white-steganography-writeup/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <div class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/08/06/fctf-easy-php/" title="Previous Post: FCTF Easy PHP Writeup">&laquo; FCTF Easy PHP Writeup</a>
+      
+    </div>
+  </footer>
+
+
+</article>
+
+
+    </div>
+    <footer role="contentinfo"><div class="content">
+  <p>    
+    Find me on <a href="https://twitter.com/tungpun_">Twitter</a>
+  </p>
+</div>
+
+</footer>
+    
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+  </div>
+  <script src="/javascripts/modernizr-2.0.js"></script>
+<script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+<script src="/javascripts/libs/respond.js" type="text/javascript"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+  var userAgent = navigator.userAgent.toLowerCase();
+  var isiPhone = (userAgent.indexOf('iphone') != -1 || userAgent.indexOf('ipod') != -1) ? true : false;
+  var isAndroid = (userAgent.indexOf('android') != -1) ? true : false;
+  clickEvent = (isiPhone || isAndroid) ? 'touchstart' : 'click';
+  $('#sidebar').on(clickEvent, function() {
+    $(this).toggleClass('open');
+  });
+  $('.articlemeta').on(clickEvent, function() {
+    toggleDisqus();
+    $(this).toggleClass('open');
+  });
+});
+</script>
+
+</body>
+</html>
