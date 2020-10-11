@@ -1,0 +1,564 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>punMag</title>
+  <meta name="author" content="Tung Pun">
+
+  
+  <meta name="description" content="　 punMag about pwnable, coding, crypto and something else ABCTF - Encryption Service - Writeup Long time, no post. Today, I am going to write about &hellip;">
+  
+
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  
+  <link rel="canonical" href="http://tungpun.github.io">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="punMag" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-66338962-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+  
+</head>
+
+<body   >
+  <div id="sidebar_control"></div>
+  <div id="sidebar">
+    <div class="logo">
+       .pM
+    </div>
+    <div class="content hide">
+      <section role="navigation">
+        <header role="banner"><hgroup>
+  <h1><a href="/"><font size="4px">by</font> Tung Pun</a></h1>
+</hgroup>
+
+</header>
+        
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:tungpun.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+
+<hr/>
+<!--<ul class="main-navigation">
+  <li><a href="/">home</a></li>
+  <li><a href="//wg.dotkrnl.com/p/public">public</a></li>
+</ul>
+-->
+
+      </section>
+      
+        <section>
+  <h2>recent</h2>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/07/19/abctf-encryption-service-writeup/">ABCTF - Encryption Service - Writeup</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/07/svattt2015-qualification/">Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/10/07/dctf-writeup/">DefCamp CTF 2015 - Writeup</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/">Writeup | CSAW CTF 2015 - Pwn - Precision</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/">Write Up | MMACTF 2015 - Pwn - RPS</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+      
+    </div>
+  </div>
+  <div id="main">
+    <div class="content">
+      
+<header>
+  <div class="back">　</div>
+  <h1 class="entry-title">
+    <a href="/">punMag</a>
+    <br/>
+    <a href="/"><font size="4px">about pwnable, coding, crypto and something else</font></a>
+  </h1>
+</header>
+<ul class="blog-index">
+  
+    
+    
+      
+      
+    
+    
+  
+  <li class="entry first-entry">
+    <h2 class="entry-title"><a href="/blog/2016/07/19/abctf-encryption-service-writeup/">ABCTF - Encryption Service - Writeup</a></h2>
+    
+      <div class="entry-content"><p>Long time, no post.</p>
+
+<p>Today, I am going to write about a Crypto challenge from <a href="http://abctf.xyz/problems">ABCTF</a>. Although it is just a competition for high school student, it still contains funny stuffs.</p>
+
+<p>In this challange, they give us:</p>
+
+<pre><code>See if you can break this!! 
+You can connect with nc 107.170.122.6 7765 and the source can be found [here](http://pastebin.com/UTkSDn4H).
+</code></pre>
+
+<p>Content of that file was extracted as below:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#/usr/bin/env python</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">Crypto.Cipher.AES</span> <span class="kn">import</span> <span class="n">AESCipher</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">import</span> <span class="nn">SocketServer</span><span class="o">,</span><span class="nn">threading</span><span class="o">,</span><span class="nn">os</span><span class="o">,</span><span class="nn">time</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">signal</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">from</span> <span class="nn">secret2</span> <span class="kn">import</span> <span class="n">FLAG</span><span class="p">,</span> <span class="n">KEY</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PORT</span> <span class="o">=</span> <span class="mi">7765</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">pad</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+</span><span class='line'>  <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">needed</span> <span class="o">=</span> <span class="mi">16</span> <span class="o">-</span> <span class="p">(</span><span class="n">l</span> <span class="o">%</span> <span class="mi">16</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">s</span> <span class="o">+</span> <span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="n">needed</span><span class="p">)</span> <span class="o">*</span> <span class="n">needed</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">AESCipher</span><span class="p">(</span><span class="n">KEY</span><span class="p">)</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span><span class="n">pad</span><span class="p">(</span><span class="s">&#39;ENCRYPT:&#39;</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;hex&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">FLAG</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">incoming</span><span class="p">(</span><span class="n">SocketServer</span><span class="o">.</span><span class="n">BaseRequestHandler</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">atfork</span><span class="p">()</span>
+</span><span class='line'>        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">def</span> <span class="nf">recvline</span><span class="p">():</span>
+</span><span class='line'>            <span class="n">buf</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+</span><span class='line'>            <span class="k">while</span> <span class="ow">not</span> <span class="n">buf</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">):</span>
+</span><span class='line'>                <span class="n">buf</span> <span class="o">+=</span> <span class="n">req</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">buf</span>
+</span><span class='line'>        <span class="n">signal</span><span class="o">.</span><span class="n">alarm</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">req</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="s">&quot;Send me some hex-encoded data to encrypt:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">data</span> <span class="o">=</span> <span class="n">recvline</span><span class="p">()</span>
+</span><span class='line'>        <span class="n">req</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="s">&quot;Here you go:&quot;</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">req</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">encrypt</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;hex&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">ReusableTCPServer</span><span class="p">(</span><span class="n">SocketServer</span><span class="o">.</span><span class="n">ForkingMixIn</span><span class="p">,</span> <span class="n">SocketServer</span><span class="o">.</span><span class="n">TCPServer</span><span class="p">):</span>
+</span><span class='line'>  <span class="k">pass</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">SocketServer</span><span class="o">.</span><span class="n">TCPServer</span><span class="o">.</span><span class="n">allow_reuse_address</span> <span class="o">=</span> <span class="bp">True</span>
+</span><span class='line'><span class="n">server</span> <span class="o">=</span> <span class="n">ReusableTCPServer</span><span class="p">((</span><span class="s">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">PORT</span><span class="p">),</span> <span class="n">incoming</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">print</span> <span class="s">&quot;Server listening on port </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">PORT</span>
+</span><span class='line'><span class="n">server</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you see, the service receives our message, uses <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES Encryption</a> to encrypt the received message, then returns the ciphertext for us.</p>
+
+<p>The key is fairly secret.</p>
+
+<p>The blocksize is 16 bytes.</p>
+
+<p>The cryto system uses ECB mode.</p>
+
+<p>I verify that with some case studies:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="err">➜</span>  <span class="n">abctf</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s">&#39;print &quot;41&quot; * 16&#39;</span> <span class="o">|</span> <span class="n">nc</span> <span class="mf">107.170</span><span class="o">.</span><span class="mf">122.6</span> <span class="mi">7765</span>
+</span><span class='line'><span class="n">Send</span> <span class="n">me</span> <span class="n">some</span> <span class="nb">hex</span><span class="o">-</span><span class="n">encoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">encrypt</span><span class="p">:</span>
+</span><span class='line'><span class="n">Here</span> <span class="n">you</span> <span class="n">go</span><span class="p">:</span><span class="n">cd7985389a47184ce3f957b15a1c45f3729e426405f3273470de17375b203fd4f4f4af26204581fa57313f57a1c57bae</span>
+</span><span class='line'><span class="err">➜</span>  <span class="n">abctf</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s">&#39;print &quot;41&quot; * 17&#39;</span> <span class="o">|</span> <span class="n">nc</span> <span class="mf">107.170</span><span class="o">.</span><span class="mf">122.6</span> <span class="mi">7765</span>
+</span><span class='line'><span class="n">Send</span> <span class="n">me</span> <span class="n">some</span> <span class="nb">hex</span><span class="o">-</span><span class="n">encoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">encrypt</span><span class="p">:</span>
+</span><span class='line'><span class="n">Here</span> <span class="n">you</span> <span class="n">go</span><span class="p">:</span><span class="n">cd7985389a47184ce3f957b15a1c45f356ef6d3f0e00fe8259a67b87a0cf8d4764851b9b4880d691d8e84fce0c35bbef</span>
+</span><span class='line'><span class="err">➜</span>  <span class="n">abctf</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s">&#39;print &quot;41&quot; * 32&#39;</span> <span class="o">|</span> <span class="n">nc</span> <span class="mf">107.170</span><span class="o">.</span><span class="mf">122.6</span> <span class="mi">7765</span>
+</span><span class='line'><span class="n">Send</span> <span class="n">me</span> <span class="n">some</span> <span class="nb">hex</span><span class="o">-</span><span class="n">encoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">encrypt</span><span class="p">:</span>
+</span><span class='line'><span class="n">Here</span> <span class="n">you</span> <span class="n">go</span><span class="p">:</span><span class="n">cd7985389a47184ce3f957b15a1c45f31c621e4e2c3a88d1aa65d60efa13b737729e426405f3273470de17375b203fd4f4f4af26204581fa57313f57a1c57bae</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="err">➜</span>  <span class="n">abctf</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s">&#39;print &quot;41&quot; * 16 + &quot;42&quot; * 16&#39;</span> <span class="o">|</span> <span class="n">nc</span> <span class="mf">107.170</span><span class="o">.</span><span class="mf">122.6</span> <span class="mi">7765</span>
+</span><span class='line'><span class="n">Send</span> <span class="n">me</span> <span class="n">some</span> <span class="nb">hex</span><span class="o">-</span><span class="n">encoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">encrypt</span><span class="p">:</span>
+</span><span class='line'><span class="n">Here</span> <span class="n">you</span> <span class="n">go</span><span class="p">:</span><span class="n">cd7985389a47184ce3f957b15a1c45f3a8e1e0aeb6ec9e58900539dbf3b8b348e2c76f25146263bc14c8d4c2cdf87baef4f4af26204581fa57313f57a1c57bae</span>
+</span><span class='line'><span class="err">➜</span>  <span class="n">abctf</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s">&#39;print &quot;43&quot; * 16 + &quot;42&quot; * 16&#39;</span> <span class="o">|</span> <span class="n">nc</span> <span class="mf">107.170</span><span class="o">.</span><span class="mf">122.6</span> <span class="mi">7765</span>
+</span><span class='line'><span class="n">Send</span> <span class="n">me</span> <span class="n">some</span> <span class="nb">hex</span><span class="o">-</span><span class="n">encoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">encrypt</span><span class="p">:</span>
+</span><span class='line'><span class="n">Here</span> <span class="n">you</span> <span class="n">go</span><span class="p">:</span><span class="n">c6245c02399859146b835ab639c2ec45d14401a93319c6f9705cdafe21743362e2c76f25146263bc14c8d4c2cdf87baef4f4af26204581fa57313f57a1c57bae</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, I focus on the below information:</p>
+
+<p><code>PLAINTEXT = 'ENCRYPT:' + message + FLAG + padding</code></p>
+
+<p>Let draft:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|</span>
+</span><span class='line'><span class="o">|</span>                             <span class="n">PLAINTEXT</span>                                               <span class="o">|</span>                                <span class="n">CIPHERTEXT</span>                                                                                       <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>     <span class="n">prefix</span>       <span class="o">|</span>              <span class="n">message</span>                           <span class="o">|</span>  <span class="n">postfix</span>        <span class="o">|</span>                                                                                                                                 <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>                  <span class="o">|</span> <span class="n">block</span> <span class="mi">0</span> <span class="p">(</span><span class="mi">16</span><span class="n">b</span><span class="p">)</span> <span class="o">|</span>  <span class="n">block</span> <span class="mi">1</span> <span class="p">(</span><span class="mi">16</span><span class="n">b</span><span class="p">)</span> <span class="o">|</span>     <span class="n">flag</span>      <span class="o">|</span>  <span class="n">padding</span>        <span class="o">|</span>              <span class="n">prefix</span>                 <span class="o">|</span>        <span class="n">block</span> <span class="mi">0</span>                    <span class="o">|</span>             <span class="n">block</span> <span class="mi">1</span>              <span class="o">|</span>   <span class="n">posfix</span>           <span class="o">|</span>
+</span><span class='line'><span class="o">|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaA</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">AEXAMPLE</span>        <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>             <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaA</span>     <span class="n">XAMPLEFLAG0x</span>    <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="mi">5</span><span class="n">bcd55b9108751d49c90e55156b693e2</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>   <span class="o">&lt;-</span>        <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="o">-</span> <span class="p">[</span> <span class="n">Let</span><span class="s">&#39;s try ] -                                                                                                                                                                                                     |</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aay</span>     <span class="n">AEXAMPLEFLAG</span>    <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="n">c6dfb6ca2e95061f3f489747a9863368</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>             <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaz</span>     <span class="n">AEXAMPLEFLAG</span>    <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="n">fd69bf1e57642c703d9cdbea681e5f74</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>             <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaA</span>     <span class="n">AEXAMPLEFLAG</span>    <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="mi">5</span><span class="n">bcd55b9108751d49c90e55156b693e2</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>   <span class="o">&lt;-</span> <span class="n">Found</span>  <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaa</span>     <span class="n">aaa</span> <span class="o">...</span> <span class="n">aaB</span>     <span class="n">AEXAMPLEFLAG</span>    <span class="mh">0x0</span><span class="n">x0x0x</span> <span class="o">...</span>    <span class="o">|</span>   <span class="n">f53163fdcfc8923ed221f1acb77d79d9</span>    <span class="n">ff714c1d533d7394f7d612cb0244c9a5</span>    <span class="n">fe11d61bfa6a55edfcc8135b6923ec12</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>             <span class="o">|</span>
+</span><span class='line'><span class="o">|</span> <span class="n">ENCRYPT</span><span class="p">:</span><span class="mi">12345678</span>    <span class="o">.</span> <span class="o">.</span> <span class="o">.</span>                                                           <span class="o">|</span>                                                                                                                                 <span class="o">|</span>
+</span><span class='line'><span class="o">|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Woah. I can guest the flag based on the crypto system.
+The next stage is to write a script to automate the work.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">from</span> <span class="nn">punpwn</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_cip</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">pp</span> <span class="o">=</span> <span class="n">PunPwn</span><span class="p">(</span><span class="s">&#39;107.170.122.6&#39;</span><span class="p">,</span> <span class="mi">7765</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">pp</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">pp</span><span class="o">.</span><span class="n">sent</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">pp</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">resp</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">][:</span><span class="mi">64</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="n">postfix</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">pad</span> <span class="o">=</span> <span class="p">(</span><span class="mi">48</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">postfix</span><span class="p">))</span> <span class="o">*</span> <span class="s">&#39;1&#39;</span>
+</span><span class='line'>    <span class="n">cip1</span> <span class="o">=</span> <span class="n">get_cip</span><span class="p">(</span><span class="n">pad</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">cip2</span> <span class="o">=</span> <span class="n">get_cip</span><span class="p">(</span><span class="n">pad</span> <span class="o">+</span> <span class="n">postfix</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">cip1</span> <span class="o">==</span> <span class="n">cip2</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">res</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+</span><span class='line'>    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">48</span><span class="p">,</span> <span class="mi">256</span><span class="p">):</span>
+</span><span class='line'>            <span class="n">postfix</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;hex&#39;</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">print</span> <span class="s">&quot;res: &quot;</span><span class="p">,</span> <span class="n">res</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">check</span><span class="p">(</span><span class="n">res</span> <span class="o">+</span> <span class="n">postfix</span><span class="p">):</span>
+</span><span class='line'>                <span class="n">res</span> <span class="o">=</span> <span class="n">res</span> <span class="o">+</span> <span class="n">postfix</span>
+</span><span class='line'>                <span class="k">break</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>My favor scripting lannguage is Python.
+I use my own lib - (punpwn)[<a href="https://github.com/tungpun/punpwn">https://github.com/tungpun/punpwn</a>], that was forked from (pwntools lib)[pwntools.readthedocs.org].</p>
+</div>
+      
+      
+    
+  </li>
+  
+
+
+  
+    
+    
+    
+  
+  <li class="entry ">
+    <h2 class="entry-title"><a href="/blog/2015/11/07/svattt2015-qualification/">Vòng Loại Sinh Viên Với an Toàn Thông Tin 2015 - Writeups</a></h2>
+    
+  </li>
+  
+
+
+  
+    
+    
+    
+  
+  <li class="entry ">
+    <h2 class="entry-title"><a href="/blog/2015/10/07/dctf-writeup/">DefCamp CTF 2015 - Writeup</a></h2>
+    
+  </li>
+  
+
+
+  
+    
+    
+    
+  
+  <li class="entry ">
+    <h2 class="entry-title"><a href="/blog/2015/09/22/writeup-csaw-ctf-2015-pwn-precision/">Writeup | CSAW CTF 2015 - Pwn - Precision</a></h2>
+    
+  </li>
+  
+
+
+  
+    
+    
+    
+  
+  <li class="entry ">
+    <h2 class="entry-title"><a href="/blog/2015/09/09/write-up--mmactf-2015-pwn-rps/">Write Up | MMACTF 2015 - Pwn - RPS</a></h2>
+    
+  </li>
+  
+
+
+  
+    
+    
+    
+  
+  <li class="entry ">
+    <h2 class="entry-title"><a href="/blog/2015/08/12/have-fun-with-linux-configure-welcome-message/">Have Fun With Linux - Configure Welcome Message</a></h2>
+    
+  </li>
+  
+
+
+  
+    
+    
+    
+  
+  <li class="entry ">
+    <h2 class="entry-title"><a href="/blog/2015/08/11/hello-pwnable/">Hello Pwnable, Protostar Stack0~5</a></h2>
+    
+  </li>
+  
+
+
+  
+    
+    
+    
+  
+  <li class="entry ">
+    <h2 class="entry-title"><a href="/blog/2015/08/07/fctf-white-steganography-writeup/">FCTF White Steganography Writeup</a></h2>
+    
+  </li>
+  
+
+
+  
+    
+    
+    
+  
+  <li class="entry ">
+    <h2 class="entry-title"><a href="/blog/2015/08/06/fctf-easy-php/">FCTF Easy PHP Writeup</a></h2>
+    
+  </li>
+  
+
+
+  
+    
+    
+    
+  
+  <li class="entry ">
+    <h2 class="entry-title"><a href="/blog/2015/08/06/first-post/">First Post</a></h2>
+    
+  </li>
+  
+
+
+  
+</ul>
+<div class="pagination">
+  
+  
+</div>
+
+    </div>
+    <footer role="contentinfo"><div class="content">
+  <p>    
+    Find me on <a href="https://twitter.com/tungpun_">Twitter</a>
+  </p>
+</div>
+
+</footer>
+    
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+  </div>
+  <script src="/javascripts/modernizr-2.0.js"></script>
+<script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+<script src="/javascripts/libs/respond.js" type="text/javascript"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+  var userAgent = navigator.userAgent.toLowerCase();
+  var isiPhone = (userAgent.indexOf('iphone') != -1 || userAgent.indexOf('ipod') != -1) ? true : false;
+  var isAndroid = (userAgent.indexOf('android') != -1) ? true : false;
+  clickEvent = (isiPhone || isAndroid) ? 'touchstart' : 'click';
+  $('#sidebar').on(clickEvent, function() {
+    $(this).toggleClass('open');
+  });
+  $('.articlemeta').on(clickEvent, function() {
+    toggleDisqus();
+    $(this).toggleClass('open');
+  });
+});
+</script>
+
+</body>
+</html>
