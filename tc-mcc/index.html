@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Tra cứu mã MCC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://bootswatch.com/5/minty/bootstrap.css">
+    <link rel="stylesheet" href="https://bootswatch.com/_vendor/bootstrap-icons/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://bootswatch.com/_vendor/prismjs/themes/prism-okaidia.css">
+    <link rel="stylesheet" href="https://bootswatch.com/_assets/css/custom.min.css">
+  </head>
+  <body>
+    
+    <div class="container">
+      <div class="page-header" id="banner">
+        <div class="row">
+          <div class="col-lg-8 col-md-7 col-sm-6">
+            <h1>Tra cứu mã MCC</h1>
+            
+            <form class="d-flex">
+              <input type="text" name="keyword" placeholder="Điền tên thương hiệu bạn muốn tra cứu. Ví dụ: CON CUNG" required class="form-control me-sm-2">
+              <input type="submit" value="Search" class="btn btn-secondary my-2 my-sm-0">
+            </form>
+          
+          </div>
+          <div class="col-lg-4 col-md-5 col-sm-6">
+            <div class="sponsor">
+              <script async="" src="https://cdn.carbonads.com/carbon.js?serve=CKYIE23N&amp;placement=bootswatchcom" id="_carbonads_js"></script>
+            </div>
+          </div>
+        </div>
+      </div>        
+    
+
+      <!-- Page content -->
+      <div class="w3-content" style="max-width:1100px;">
+        <div class="w3-container container-output" ></div>
+      </div>
+
+
+      <script>
+        document.querySelector('form').addEventListener('submit', function(event) {
+          event.preventDefault();
+          const keyword = document.querySelector('input[name="keyword"]').value;
+          fetch(`http://5.78.73.229:38080/mcc?keyword=${keyword}`)
+            .then(response => response.json())
+            .then(data => {
+              const results = data.results;
+              let table = `
+                <table class="table table-hover">
+                  <thead>
+                    <tr style="background-color: #007BFF; color: #fff;">
+                      <th scope="col">Tên</th>
+                      <th scope="col">MCC</th>
+                      <th scope="col">Phương thức thanh toán</th>
+                      <th scope="col">Ngành hàng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+              `;
+              results.forEach(result => {
+                table += `
+                  <tr>
+                    <td scope="row">${result[1]}</td>
+                    <td scope="row">${result[2]}</td>
+                    <td scope="row">${result[3]}</td>
+                    <td scope="row">${result[4]}</td>
+                  </tr>
+                `;
+              });
+              table += `
+                  </tbody>
+                </table>
+              `;
+              document.querySelector('.container-output').innerHTML = table;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+      </script>
+      <footer id="footer" style="bottom: 0; width: 100%; background-color: #f8f9fa; padding: 10px 0;">
+        <div class="row">
+          <div class="col-lg-12">
+            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" onclick="expandImage(this)">
+              Ủng hộ nhà phát triển nếu bạn thấy thông tin hữu ích nhé 😅
+            </button>
+
+        <!-- <img src="IMG_8506.jpg" alt="Description of the image" style="max-width: 2%; height: auto; cursor: pointer;" onclick="expandImage(this)"> -->
+
+        <script>
+          function expandImage(img) {
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
+
+            const expandedImg = document.createElement('img');
+            expandedImg.src = "IMG_8506.jpg";
+            expandedImg.style.maxWidth = '90%';
+            expandedImg.style.maxHeight = '90%';
+
+            modal.appendChild(expandedImg);
+
+            modal.onclick = function() {
+          document.body.removeChild(modal);
+            };
+
+            document.body.appendChild(modal);
+          }
+        </script>
+          </div>
+        </div>
+      </footer> </div>
+  </body>
+</html>
