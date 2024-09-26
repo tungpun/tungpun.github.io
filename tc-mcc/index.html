@@ -48,7 +48,7 @@
         document.querySelector('form').addEventListener('submit', function(event) {
           event.preventDefault();
           const keyword = document.querySelector('input[name="keyword"]').value;
-          fetch(`http://5.78.73.229:38080/mcc?keyword=${keyword}`)
+          fetch(`https://tc-mcc.ddns.net/mcc?keyword=${keyword}`)
             .then(response => response.json())
             .then(data => {
               const results = data.results;
