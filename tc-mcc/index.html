@@ -77,6 +77,20 @@
                   </div>
                 `;
           const keyword = document.querySelector('input[name="keyword"]').value;
+          if (keyword.length <= 2) {
+            document.querySelector('.container-output').innerHTML = `
+              <p></p>
+              <div class="col-lg-12">
+                <div class="bs-component">
+                  <div class="alert alert-dismissible alert-danger">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <p class="mb-0">Từ khóa phải dài hơn 2 ký tự. Vui lòng thử lại!</p>
+                  </div>
+                </div>
+              </div>
+            `;
+            return;
+          }
           fetch(`https://tc-mcc.ddns.net/mcc?keyword=${keyword}`)
             .then(response => response.json())
             .then(data => {
