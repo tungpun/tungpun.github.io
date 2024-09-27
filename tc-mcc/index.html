@@ -27,20 +27,30 @@
             <div class="page-header">
               <h1 id="navbars">Tra cứu mã MCC</h1>
             </div>
-            <form class="d-flex">
-              <input type="text" name="keyword" placeholder="Điền tên thương hiệu bạn muốn tra cứu. Ví dụ: CON CUNG" required class="form-control me-sm-2">
-              <input type="submit" value="Tìm kiếm" class="btn btn-secondary my-2 my-sm-0">
-            </form>
-          
           </div>
         </div>
-      </div>        
+      </div>
+    </div>
+        
+    <div class="container">
+        <div class="row">  
+          <form class="">
+            <div class="col-lg-8 col-md-7 col-sm-6">
+              <input type="text" name="keyword" placeholder="Điền tên thương hiệu bạn muốn tra cứu. Ví dụ: CON CUNG" required class="form-control me-sm-2" style="width: 100%;">
+            </div>
+            <div class="col-lg-4 col-md-5 col-sm-6">
+              <input type="submit" value="Tìm kiếm" class="btn btn-secondary my-2 my-sm-0" style="width: 100%;">
+            </div>
+          </form>
+        </div>
+    </div>        
     
 
-      <!-- Page content -->
+    <div class="container">
       <div class="w3-content" style="max-width:1100px;">
         <div class="w3-container container-output" ></div>
       </div>
+    </div>
 
 
       <script>
@@ -99,42 +109,44 @@
         
       </script>
       <footer id="footer" style="bottom: 0; width: 100%; background-color: #f8f9fa; padding: 10px 0;">
-        <div class="row">
-          <div class="col-lg-12">
-            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" onclick="expandImage(this)">
-              Ủng hộ nhà phát triển nếu bạn thấy thông tin hữu ích nhé 😅
-            </button>
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-12">
+              <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" onclick="expandImage(this)">
+                Ủng hộ nhà phát triển nếu bạn thấy thông tin hữu ích nhé 😅
+              </button>
 
-        <!-- <img src="qr.jpg" alt="Description of the image" style="max-width: 2%; height: auto; cursor: pointer;" onclick="expandImage(this)"> -->
+          <!-- <img src="qr.jpg" alt="Description of the image" style="max-width: 2%; height: auto; cursor: pointer;" onclick="expandImage(this)"> -->
 
-        <script>
-          function expandImage(img) {
-            const modal = document.createElement('div');
-            modal.style.position = 'fixed';
-            modal.style.top = '0';
-            modal.style.left = '0';
-            modal.style.width = '100%';
-            modal.style.height = '100%';
-            modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-            modal.style.display = 'flex';
-            modal.style.justifyContent = 'center';
-            modal.style.alignItems = 'center';
-            modal.style.zIndex = '1000';
+          <script>
+            function expandImage(img) {
+              const modal = document.createElement('div');
+              modal.style.position = 'fixed';
+              modal.style.top = '0';
+              modal.style.left = '0';
+              modal.style.width = '100%';
+              modal.style.height = '100%';
+              modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+              modal.style.display = 'flex';
+              modal.style.justifyContent = 'center';
+              modal.style.alignItems = 'center';
+              modal.style.zIndex = '1000';
 
-            const expandedImg = document.createElement('img');
-            expandedImg.src = "qr.jpg";
-            expandedImg.style.maxWidth = '90%';
-            expandedImg.style.maxHeight = '90%';
+              const expandedImg = document.createElement('img');
+              expandedImg.src = "qr.jpg";
+              expandedImg.style.maxWidth = '90%';
+              expandedImg.style.maxHeight = '90%';
 
-            modal.appendChild(expandedImg);
+              modal.appendChild(expandedImg);
 
-            modal.onclick = function() {
-          document.body.removeChild(modal);
-            };
+              modal.onclick = function() {
+            document.body.removeChild(modal);
+              };
 
-            document.body.appendChild(modal);
-          }
-        </script>
+              document.body.appendChild(modal);
+            }
+          </script>
+            </div>
           </div>
         </div>
       </footer> </div>
