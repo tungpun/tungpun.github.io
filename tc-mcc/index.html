@@ -50,36 +50,52 @@
             .then(response => response.json())
             .then(data => {
               const results = data.results;
-              let table = `
-                <table class="table table-hover">
-                  <thead>
-                    <tr style="background-color: #007BFF; color: #fff;">
-                      <th scope="col">Tên</th>
-                      <th scope="col">MCC</th>
-                      <th scope="col">Phương thức thanh toán</th>
-                      <th scope="col">Ngành hàng</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-              `;
-              results.forEach(result => {
-                table += `
-                  <tr>
-                    <td scope="row">${result[1]}</td>
-                    <td scope="row">${result[2]}</td>
-                    <td scope="row">${result[3]}</td>
-                    <td scope="row">${result[4]}</td>
-                  </tr>
+              let output = '';
+              if (results.length === 0) {
+                output = `
+                <p></p>
+                <div class="col-lg-12">
+                  <div class="bs-component">
+                    <div class="alert alert-dismissible alert-warning">
+                      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                      <p class="mb-0">Không tìm thấy kết quả. Bạn vui lòng thử lại sau!</p>
+                    </div>
+                </div>
                 `;
-              });
-              table += `
-                  </tbody>
-                </table>
-              `;
-              document.querySelector('.container-output').innerHTML = table;
+              } else {
+                let table = `
+                  <table class="table table-hover">
+                    <thead>
+                      <tr style="background-color: #007BFF; color: #fff;">
+                        <th scope="col">Tên</th>
+                        <th scope="col">MCC</th>
+                        <th scope="col">Phương thức thanh toán</th>
+                        <th scope="col">Ngành hàng</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                `;
+                results.forEach(result => {
+                  table += `
+                    <tr>
+                      <td scope="row">${result[1]}</td>
+                      <td scope="row">${result[2]}</td>
+                      <td scope="row">${result[3]}</td>
+                      <td scope="row">${result[4]}</td>
+                    </tr>
+                  `;
+                });
+                table += `
+                    </tbody>
+                  </table>
+                `;
+                output = table;
+              }
+              document.querySelector('.container-output').innerHTML = output;
             })
             .catch(error => console.error('Error:', error));
         });
+        
       </script>
       <footer id="footer" style="bottom: 0; width: 100%; background-color: #f8f9fa; padding: 10px 0;">
         <div class="row">
