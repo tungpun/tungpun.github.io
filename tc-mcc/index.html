@@ -65,6 +65,17 @@
         });
 
         function searchMCC() {
+          document.querySelector('.container-output').innerHTML = `
+                  <p></p>
+                  <div class="col-lg-12">
+                    <div class="bs-component">
+                      <div class="alert alert-dismissible alert-light">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <p class="mb-0">Đang tìm kiếm, bạn vui lòng chờ trong giây lát...</p>
+                      </div>
+                    </div>
+                  </div>
+                `;
           const keyword = document.querySelector('input[name="keyword"]').value;
           fetch(`https://tc-mcc.ddns.net/mcc?keyword=${keyword}`)
             .then(response => response.json())
