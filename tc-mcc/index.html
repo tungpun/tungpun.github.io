@@ -20,6 +20,17 @@
     <link rel="stylesheet" href="https://bootswatch.com/_assets/css/custom.min.css">
   </head>
   <body>
+    <div class="navbar navbar-expand-lg fixed-top" data-bs-theme="dark">
+      
+        <div class="container">
+          <div class="d-block text-center bs-component">
+            <button class="btn btn-info" onclick="expandImage(this)" id="notificationButton">
+            <p class="mb-0">🧧 Thông báo: Mình mới cập nhật thêm mã QR ở phần donate. Cảm ơn mọi người đã ủng hỗ ạ! 🧧</p>
+          </div>
+        </div>
+      
+    </div>
+
     <div class="container">
       <div class="page-header" id="banner">
         <div class="row">
@@ -29,7 +40,7 @@
         </div>
       </div>
     </div>
-        
+      
     <div class="container">
         <div class="row">  
           
@@ -50,173 +61,185 @@
       </div>
     </div>
 
+    <footer id="footer" style="bottom: 0; width: 100%; background-color: #f8f9fa; padding: 10px 0;">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" onclick="expandImage(this)" id="supportButton">
+              Bấm vào đây để ủng hộ nhà phát triển nếu bạn thấy thông tin hữu ích nhé 😅
+            </button>
 
-      <script>
-        document.querySelector('input[type="submit"]').addEventListener('click', function(event) {
-          event.preventDefault();
-          searchMCC();
-        });
-
-        document.querySelector('input[name="keyword"]').addEventListener('keypress', function(event) {
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            searchMCC();
-          }
-        });
-
-        function searchMCC() {
-          document.querySelector('.container-output').innerHTML = `
-                  <p></p>
-                  <div class="col-lg-12">
-                    <div class="bs-component">
-                      <div class="alert alert-dismissible alert-light">
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        <p class="mb-0">Đang tìm kiếm, bạn vui lòng chờ trong giây lát...</p>
-                      </div>
-                    </div>
-                  </div>
-                `;
-          const keyword = document.querySelector('input[name="keyword"]').value;
-          if (keyword.length <= 2) {
-            document.querySelector('.container-output').innerHTML = `
-              <p></p>
-              <div class="col-lg-12">
-                <div class="bs-component">
-                  <div class="alert alert-dismissible alert-danger">
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    <p class="mb-0">Từ khóa phải dài hơn 2 ký tự. Vui lòng thử lại!</p>
-                  </div>
-                </div>
-              </div>
-            `;
-            return;
-          }
-          fetch(`https://tc-mcc.ddns.net/mcc?keyword=${keyword}`)
-            .then(response => response.json())
-            .then(data => {
-              const results = data.results;
-              let output = '';
-              if (results.length === 0) {
-                output = `
-                  <p></p>
-                  <div class="col-lg-12">
-                    <div class="bs-component">
-                      <div class="alert alert-dismissible alert-warning">
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        <p class="mb-0">Không tìm thấy kết quả. Bạn vui lòng thử lại sau!</p>
-                      </div>
-                    </div>
-                  </div>
-                `;
-              } else {
-                let table = `
-                  <table class="table table-hover">
-                    <thead>
-                      <tr style="background-color: #007BFF; color: #fff;">
-                        <th scope="col">Tên</th>
-                        <th scope="col">MCC</th>
-                        <th scope="col">PTTT</th>
-                        <th scope="col">Ngành hàng</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                `;
-                results.forEach(result => {
-                  table += `
-                    <tr>
-                      <td scope="row">${result[1]} ${result[5]}</td>
-                      <td scope="row">${result[2]}</td>
-                      <td scope="row">${result[3]}</td>
-                      <td scope="row">${result[4]}</td>
-                    </tr>
-                  `;
-                });
-                table += `
-                    </tbody>
-                  </table>
-                `;
-                output = table;
+            <script>
+              function shakeSupportButton() {
+                const button = document.getElementById('supportButton');
+                button.classList.add('shake');
+                setTimeout(() => {
+                  button.classList.remove('shake');
+                }, 1000); // Shake duration
               }
-              document.querySelector('.container-output').innerHTML = output;
-            })
-            .catch(error => console.error('Error:', error));
-        }
-        
-      </script>
-      <footer id="footer" style="bottom: 0; width: 100%; background-color: #f8f9fa; padding: 10px 0;">
-        <div class="container">
-          <div class="row">
-            <div class="col-lg-12">
-              <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" onclick="expandImage(this)" id="supportButton">
-                Bấm vào đây để ủng hộ nhà phát triển nếu bạn thấy thông tin hữu ích nhé 😅
-              </button>
 
-              <script>
-                function shakeButton() {
-                  const button = document.getElementById('supportButton');
-                  button.classList.add('shake');
-                  setTimeout(() => {
-                    button.classList.remove('shake');
-                  }, 1000); // Shake duration
-                }
+              setInterval(shakeSupportButton, 2500); // Shake every 2.5 seconds
 
-                setInterval(shakeButton, 5000); // Shake every 5 seconds
-              </script>
+              function shakeNotiButton() {
+                const button = document.getElementById('notificationButton');
+                button.classList.add('shake');
+                setTimeout(() => {
+                  button.classList.remove('shake');
+                }, 1000); // Shake duration
+              }
 
-              <style>
-                @keyframes shake {
-                  0% { transform: translate(1px, 1px) rotate(0deg); }
-                  10% { transform: translate(-1px, -2px) rotate(-1deg); }
-                  20% { transform: translate(-3px, 0px) rotate(1deg); }
-                  30% { transform: translate(3px, 2px) rotate(0deg); }
-                  40% { transform: translate(1px, -1px) rotate(1deg); }
-                  50% { transform: translate(-1px, 2px) rotate(-1deg); }
-                  60% { transform: translate(-3px, 1px) rotate(0deg); }
-                  70% { transform: translate(3px, 1px) rotate(-1deg); }
-                  80% { transform: translate(-1px, -1px) rotate(1deg); }
-                  90% { transform: translate(1px, 2px) rotate(0deg); }
-                  100% { transform: translate(1px, -2px) rotate(-1deg); }
-                }
+              setInterval(shakeNotiButton, 6000); // Shake every 6 seconds
 
-                .shake {
-                  animation: shake 1s;
-                  animation-iteration-count: 1;
-                }
-              </style>
+              
+            </script>
 
-          <!-- <img src="qr.jpg" alt="Description of the image" style="max-width: 2%; height: auto; cursor: pointer;" onclick="expandImage(this)"> -->
+            <style>
+              @keyframes shake {
+                0% { transform: translate(1px, 1px) rotate(0deg); }
+                10% { transform: translate(-1px, -2px) rotate(-1deg); }
+                20% { transform: translate(-3px, 0px) rotate(1deg); }
+                30% { transform: translate(3px, 2px) rotate(0deg); }
+                40% { transform: translate(1px, -1px) rotate(1deg); }
+                50% { transform: translate(-1px, 2px) rotate(-1deg); }
+                60% { transform: translate(-3px, 1px) rotate(0deg); }
+                70% { transform: translate(3px, 1px) rotate(-1deg); }
+                80% { transform: translate(-1px, -1px) rotate(1deg); }
+                90% { transform: translate(1px, 2px) rotate(0deg); }
+                100% { transform: translate(1px, -2px) rotate(-1deg); }
+              }
 
-          <script>
-            function expandImage(img) {
-              const modal = document.createElement('div');
-              modal.style.position = 'fixed';
-              modal.style.top = '0';
-              modal.style.left = '0';
-              modal.style.width = '100%';
-              modal.style.height = '100%';
-              modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-              modal.style.display = 'flex';
-              modal.style.justifyContent = 'center';
-              modal.style.alignItems = 'center';
-              modal.style.zIndex = '1000';
+              .shake {
+                animation: shake 1s;
+                animation-iteration-count: 1;
+              }
+            </style>
 
-              const expandedImg = document.createElement('img');
-              expandedImg.src = "qr.jpg";
-              expandedImg.style.maxWidth = '90%';
-              expandedImg.style.maxHeight = '90%';
+        <script>
+          function expandImage(img) {
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
 
-              modal.appendChild(expandedImg);
+            const expandedImg = document.createElement('img');
+            expandedImg.src = "qr-vpbank.png";
+            expandedImg.style.maxWidth = '90%';
+            expandedImg.style.maxHeight = '90%';
 
-              modal.onclick = function() {
-            document.body.removeChild(modal);
-              };
+            modal.appendChild(expandedImg);
 
-              document.body.appendChild(modal);
-            }
-          </script>
-            </div>
+            modal.onclick = function() {
+              document.body.removeChild(modal);
+            };
+
+            document.body.appendChild(modal);
+          }
+        </script>
           </div>
         </div>
-      </footer> </div>
+      </div>
+    </footer>
+
+
+    <script>
+      document.querySelector('input[type="submit"]').addEventListener('click', function(event) {
+        event.preventDefault();
+        searchMCC();
+      });
+
+      document.querySelector('input[name="keyword"]').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          searchMCC();
+        }
+      });
+
+      function searchMCC() {
+        document.querySelector('.container-output').innerHTML = `
+                <p></p>
+                <div class="col-lg-12">
+                  <div class="bs-component">
+                    <div class="alert alert-dismissible alert-light">
+                      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                      <p class="mb-0">Đang tìm kiếm, bạn vui lòng chờ trong giây lát...</p>
+                    </div>
+                  </div>
+                </div>
+              `;
+        const keyword = document.querySelector('input[name="keyword"]').value;
+        if (keyword.length <= 2) {
+          document.querySelector('.container-output').innerHTML = `
+            <p></p>
+            <div class="col-lg-12">
+              <div class="bs-component">
+                <div class="alert alert-dismissible alert-danger">
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                  <p class="mb-0">Từ khóa phải dài hơn 2 ký tự. Vui lòng thử lại!</p>
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+        fetch(`https://tc-mcc.ddns.net/mcc?keyword=${keyword}`)
+          .then(response => response.json())
+          .then(data => {
+            const results = data.results;
+            let output = '';
+            if (results.length === 0) {
+              output = `
+                <p></p>
+                <div class="col-lg-12">
+                  <div class="bs-component">
+                    <div class="alert alert-dismissible alert-warning">
+                      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                      <p class="mb-0">Không tìm thấy kết quả. Bạn vui lòng thử lại sau!</p>
+                    </div>
+                  </div>
+                </div>
+              `;
+            } else {
+              let table = `
+                <table class="table table-hover">
+                  <thead>
+                    <tr style="background-color: #007BFF; color: #fff;">
+                      <th scope="col">Tên</th>
+                      <th scope="col">MCC</th>
+                      <th scope="col">PTTT</th>
+                      <th scope="col">Ngành hàng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+              `;
+              results.forEach(result => {
+                table += `
+                  <tr>
+                    <td scope="row">${result[1]} ${result[5]}</td>
+                    <td scope="row">${result[2]}</td>
+                    <td scope="row">${result[3]}</td>
+                    <td scope="row">${result[4]}</td>
+                  </tr>
+                `;
+              });
+              table += `
+                  </tbody>
+                </table>
+              `;
+              output = table;
+            }
+            document.querySelector('.container-output').innerHTML = output;
+          })
+          .catch(error => console.error('Error:', error));
+      }
+      
+    </script>
+    
   </body>
 </html>
