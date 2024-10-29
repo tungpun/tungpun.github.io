@@ -226,7 +226,7 @@
           `;
           return;
         }
-        fetch(`https://tc-mcc.ddns.net/mcc?keyword=${keyword}`)
+        fetch(`http://5.78.73.229/mcc?keyword=${keyword}`)
           .then(response => response.json())
           .then(data => {
             const results = data.results;
