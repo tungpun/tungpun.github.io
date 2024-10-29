@@ -226,7 +226,7 @@
           `;
           return;
         }
-        fetch(`http://5.78.73.229/mcc?keyword=${keyword}`)
+        fetch(`https://tc-mcc.tungpun.site/mcc?keyword=${keyword}`)
           .then(response => response.json())
           .then(data => {
             const results = data.results;
