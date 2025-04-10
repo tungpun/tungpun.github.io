@@ -1,46 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free QR Code Generator | Generate QR Codes Instantly</title>
+    <link rel="shortcut icon" type="image/png" href="favicon-32x32.png">
     
-    <!-- Primary Meta Tags -->
-    <title>QR Code Creator - Free Online QR Code Generator</title>
-    <meta name="title" content="QR Code Creator - Free Online QR Code Generator">
-    <meta name="description" content="Create QR codes instantly for URLs, text, and more. Free, fast, and easy to use QR code generator with high-quality output." />
-    <meta name="author" content="Lovable" />
-    <meta name="keywords" content="qr code, qr code generator, qr creator, free qr code, online qr code, url to qr code" />
-    <meta name="robots" content="index, follow">
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Generate QR codes instantly for free. Create QR codes for URLs, text, and more with our easy-to-use online QR code generator.">
+    <meta name="keywords" content="qr code generator, free qr code, qr code maker, url to qr code, text to qr code">
+    <meta name="author" content="Tung Pun">
     
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://tungpun.github.io/qr/" />
-    <meta property="og:title" content="QR Code Creator - Free Online QR Code Generator" />
-    <meta property="og:description" content="Create QR codes instantly for URLs, text, and more. Free, fast, and easy to use QR code generator with high-quality output." />
-    <meta property="og:image" content="https://tungpun.github.io/qr/preview.png" />
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Free QR Code Generator">
+    <meta property="og:description" content="Generate QR codes instantly for free. Create QR codes for URLs, text, and more.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tungpun.github.io/qr/">
     
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://tungpun.github.io/qr/">
-    <meta property="twitter:title" content="QR Code Creator - Free Online QR Code Generator">
-    <meta property="twitter:description" content="Create QR codes instantly for URLs, text, and more. Free, fast, and easy to use QR code generator with high-quality output.">
-    <meta property="twitter:image" content="https://tungpun.github.io/qr/preview.png">
+    <!-- QR Code Library -->
+    <script src="js/qrcode.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="site.webmanifest">
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://tungpun.github.io/qr/" />
-    
-    <!-- Assets -->
-    <script type="module" crossorigin src="assets/index-DtSMRDPk.js"></script>
-    <link rel="stylesheet" crossorigin href="assets/index-yut3nZun.css">
-  </head>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
 
-  <body>
-    <div id="root"></div>    
-  </body>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #3182ce;
+        }
+
+        #qrResult {
+            margin-top: 2rem;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #qrResult img {
+            display: block;
+            margin: 0 auto;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .download-btn {
+            display: none;
+            margin-top: 1rem;
+            background: #48bb78;
+        }
+
+        .download-btn:hover {
+            background: #38a169;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Free QR Code Generator</h1>
+        <div class="input-group">
+            <label for="text">Enter Text or URL:</label>
+            <input type="text" id="text" placeholder="Enter text or paste URL here...">
+        </div>
+        <button onclick="generateQR()">Generate QR Code</button>
+        <div id="qrResult"></div>
+        <button class="download-btn" id="downloadBtn" onclick="downloadQR()" style="display: none;">Download QR Code</button>
+    </div>
+
+    <script>
+        function generateQR() {
+            const text = document.getElementById('text').value;
+            if (!text) {
+                alert('Please enter some text or URL');
+                return;
+            }
+
+            const qrResult = document.getElementById('qrResult');
+            qrResult.innerHTML = '';
+
+            // Clear previous QR code
+            qrResult.innerHTML = '';
+            
+            // Create QR code
+            new QRCode(qrResult, {
+                text: text,
+                width: 300,
+                height: 300,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Show download button
+            document.getElementById('downloadBtn').style.display = 'block';
+        }
+
+        function downloadQR() {
+            const img = document.querySelector('#qrResult img');
+            if (!img) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            const link = document.createElement('a');
+            link.download = 'qr-code.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Generate QR code on Enter key press
+        document.getElementById('text').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQR();
+            }
+        });
+    </script>
+</body>
 </html>
