@@ -14,19 +14,66 @@
 
     <title>Tra cứu mã MCC</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://bootswatch.com/5/minty/bootstrap.css">
-    <link rel="stylesheet" href="https://bootswatch.com/_vendor/bootstrap-icons/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="https://bootswatch.com/_vendor/prismjs/themes/prism-okaidia.css">
-    <link rel="stylesheet" href="https://bootswatch.com/_assets/css/custom.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+      .hero-section {
+        background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+        padding: 4rem 0;
+        margin-bottom: 2rem;
+        color: white;
+      }
+      .search-container {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        margin-bottom: 2rem;
+      }
+      .search-input {
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        border: 1px solid #dee2e6;
+      }
+      .search-input:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+      }
+      .search-button {
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+      }
+      .container-output {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        display: none;
+      }
+      .container-output:not(:empty) {
+        display: block;
+      }
+      .footer {
+        background: white;
+        padding: 1.5rem 0;
+        margin-top: 3rem;
+        box-shadow: 0 -0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      }
+    </style>
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Tra cứu mã MCC khi thanh toán thẻ tín dụng nhanh chóng và chính xác. Tìm kiếm mã MCC của các thương hiệu phổ biến tại Việt Nam.">
+    <meta name="description" content="Tra cứu mã MCC để tối ưu cashback khi thanh toán thẻ tín dụng nhanh chóng và chính xác. Tìm kiếm mã MCC của các thương hiệu phổ biến tại Việt Nam.">
     <meta name="keywords" content="tra cứu mã MCC, mã MCC, Việt Nam, credit card, bank, ngân hàng, thẻ tín dụng">
     <meta name="author" content="Tung Pun">
 
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="Tra cứu mã MCC">
-    <meta property="og:description" content="Tra cứu mã MCC khi thanh toán thẻ tín dụng nhanh chóng và chính xác. Tìm kiếm mã MCC của các thương hiệu phổ biến tại Việt Nam.">
+    <meta property="og:description" content="Tra cứu mã MCC để tối ưu cashback khi thanh toán thẻ tín dụng nhanh chóng và chính xác. Tìm kiếm mã MCC của các thương hiệu phổ biến tại Việt Nam.">
     <meta property="og:image" content="https://example.com/thumbnail.jpg">
     <meta property="og:url" content="https://tungpun.github.io/tc-mcc/">
     <meta property="og:type" content="website">
@@ -34,7 +81,7 @@
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Tra cứu mã MCC">
-    <meta name="twitter:description" content="Tra cứu mã MCC khi thanh toán thẻ tín dụng nhanh chóng và chính xác. Tìm kiếm mã MCC của các thương hiệu phổ biến tại Việt Nam.">
+    <meta name="twitter:description" content="Tra cứu mã MCC để tối ưu cashback khi thanh toán thẻ tín dụng nhanh chóng và chính xác. Tìm kiếm mã MCC của các thương hiệu phổ biến tại Việt Nam.">
     <meta name="twitter:image" content="https://example.com/thumbnail.jpg">
 
     <!-- Canonical Link -->
@@ -47,7 +94,7 @@
       "@type": "WebSite",
       "name": "Tra cứu mã MCC - Tung Pun",
       "url": "https://tungpun.github.io/tc-mcc/",
-      "description": "Tra cứu mã MCC khi thanh toán thẻ tín dụng nhanh chóng và chính xác. Tìm kiếm mã MCC của các thương hiệu phổ biến tại Việt Nam.",
+      "description": "Tra cứu mã MCC để tối ưu cashback khi thanh toán thẻ tín dụng nhanh chóng và chính xác. Tìm kiếm mã MCC của các thương hiệu phổ biến tại Việt Nam.",
       "author": {
         "@type": "Person",
         "name": "Tung Pun"
@@ -57,28 +104,24 @@
 
   </head>
   <body>
-    
+    <div class="hero-section">
+      <div class="container text-center">
+        <h1 class="display-4 mb-3">Tra cứu mã MCC - TungPun</h1>
+        <p class="lead mb-0">Tra cứu mã MCC để tối ưu cashback khi thanh toán thẻ tín dụng nhanh chóng và chính xác</p>
+      </div>
+    </div>
+
     <div class="container">
-      <div class="page-header" id="banner">
-        <div class="row">
-          <div class="page-header">
-            <h1 id="navbars">Tra cứu mã MCC - TungPun</h1>
+      <div class="search-container">
+        <div class="row g-3">
+          <div class="col-lg-10 col-md-9">
+            <input type="text" name="keyword" placeholder="Điền tên bạn muốn tra cứu. Ví dụ: Long Chau" required class="form-control search-input">
+          </div>
+          <div class="col-lg-2 col-md-3">
+            <input type="submit" value="Tìm kiếm" class="btn btn-primary search-button w-100">
           </div>
         </div>
       </div>
-    </div>
-      
-    <div class="container">
-        <div class="row">  
-          
-          <div class="col-lg-10 col-md-9 col-sm-9">
-            <input type="text" name="keyword" placeholder="Điền tên bạn muốn tra cứu. Ví dụ: CON CUNG" required class="form-control my-2 my-sm-0 w-100">
-          </div>
-          <div class="col-lg-2 col-md-3 col-sm-3">
-            <input type="submit" value="Tìm kiếm" class="btn btn-secondary my-2 my-sm-0 w-100">
-          </div>
-          
-        </div>
     </div>        
     
 
@@ -88,14 +131,18 @@
       </div>
     </div>
 
-    <footer id="footer" style="bottom: 0; width: 100%; background-color: #f8f9fa; padding: 10px 0;">
+    <footer class="footer">
       <div class="container">
         <div class="row">
           <div class="col-lg-12">
-            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" onclick="expandImage(this)" id="supportButton">
-              Bấm vào đây để ủng hộ nhà phát triển nếu bạn thấy thông tin hữu ích nhé 😅
-            </button>
-            <a href="/qr" class="btn btn-info ms-auto float-end">🔗 Tạo mã QR miễn phí & không có quảng cáo</a>
+            <div class="d-flex align-items-center justify-content-between">
+              <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" onclick="expandImage(this)" id="supportButton">
+                <i class="bi bi-heart-fill me-2"></i>Ủng hộ nhà phát triển
+              </button>
+              <a href="/qr" class="btn btn-info">
+                <i class="bi bi-qr-code me-2"></i>Tạo mã QR miễn phí và không quảng cáo
+              </a>
+            </div>
             
             <script>
               function shakeSupportButton() {
