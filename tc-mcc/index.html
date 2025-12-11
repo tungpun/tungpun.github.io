@@ -263,7 +263,7 @@
           `;
           return;
         }
-        fetch(`https://tc-mcc.tungpun.site/mcc?keyword=${keyword}`)
+        fetch(`http://5.78.73.229:38080/mcc?keyword=${keyword}`)
           .then(response => response.json())
           .then(data => {
             const results = data.results;
