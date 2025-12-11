@@ -14,64 +14,305 @@
 
     <title>Tra cứu mã MCC</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="assets/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/bootstrap-icons.css">
     <style>
-      body {
-        background-color: #f8f9fa;
+      :root {
+        --neon-pink: #ff2d95;
+        --neon-cyan: #00f5ff;
+        --neon-purple: #b026ff;
+        --neon-orange: #ff6b35;
+        --dark-bg: #0a0a1a;
+        --dark-card: rgba(20, 20, 40, 0.8);
       }
+      
+      body {
+        background: var(--dark-bg);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        font-family: 'Outfit', sans-serif;
+      }
+      
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+          radial-gradient(ellipse at 20% 20%, rgba(176, 38, 255, 0.15) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 80%, rgba(255, 45, 149, 0.15) 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 50%, rgba(0, 245, 255, 0.08) 0%, transparent 60%);
+        animation: backgroundPulse 8s ease-in-out infinite;
+        z-index: -1;
+      }
+      
+      @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      
       .hero-section {
-        background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+        background: linear-gradient(135deg, var(--neon-purple) 0%, var(--neon-pink) 50%, var(--neon-orange) 100%);
         padding: 4rem 0;
         margin-bottom: 2rem;
         color: white;
+        position: relative;
+        overflow: hidden;
       }
+      
+      .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 10px,
+          rgba(255, 255, 255, 0.03) 10px,
+          rgba(255, 255, 255, 0.03) 20px
+        );
+        animation: moveStripes 20s linear infinite;
+      }
+      
+      @keyframes moveStripes {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(50px, 50px); }
+      }
+      
+      .hero-section h1 {
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        position: relative;
+        z-index: 1;
+        animation: titleGlow 3s ease-in-out infinite;
+      }
+      
+      @keyframes titleGlow {
+        0%, 100% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+        50% { text-shadow: 0 0 40px rgba(255, 255, 255, 0.8), 0 0 60px rgba(0, 245, 255, 0.4); }
+      }
+      
+      .hero-section p {
+        position: relative;
+        z-index: 1;
+      }
+      
       .search-container {
-        background: white;
-        border-radius: 1rem;
+        background: var(--dark-card);
+        backdrop-filter: blur(10px);
+        border-radius: 1.5rem;
         padding: 2rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 245, 255, 0.3);
+        box-shadow: 
+          0 0 30px rgba(0, 245, 255, 0.1),
+          inset 0 0 20px rgba(0, 245, 255, 0.05);
         margin-bottom: 2rem;
+        transition: all 0.3s ease;
       }
+      
+      .search-container:hover {
+        border-color: rgba(0, 245, 255, 0.5);
+        box-shadow: 
+          0 0 40px rgba(0, 245, 255, 0.2),
+          inset 0 0 30px rgba(0, 245, 255, 0.08);
+      }
+      
       .search-input {
-        border-radius: 0.5rem;
-        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        padding: 0.85rem 1.25rem;
         font-size: 1rem;
-        border: 1px solid #dee2e6;
+        border: 1px solid rgba(176, 38, 255, 0.3);
+        background: rgba(10, 10, 26, 0.8);
+        color: #fff;
+        transition: all 0.3s ease;
       }
+      
+      .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+      
       .search-input:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+        background: rgba(10, 10, 26, 0.95);
+        outline: none;
       }
+      
       .search-button {
-        border-radius: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        font-weight: 500;
+        border-radius: 0.75rem;
+        padding: 0.85rem 1.5rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-purple) 100%);
+        border: none;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 20px rgba(255, 45, 149, 0.3);
       }
+      
+      .search-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 30px rgba(255, 45, 149, 0.5);
+        background: linear-gradient(135deg, var(--neon-purple) 0%, var(--neon-pink) 100%);
+      }
+      
       .container-output {
-        background: white;
-        border-radius: 1rem;
+        background: var(--dark-card);
+        backdrop-filter: blur(10px);
+        border-radius: 1.5rem;
         padding: 1.5rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(176, 38, 255, 0.3);
+        box-shadow: 0 0 30px rgba(176, 38, 255, 0.1);
         display: none;
+        color: #fff;
       }
+      
       .container-output:not(:empty) {
         display: block;
       }
+      
+      .container-output .table {
+        color: #fff;
+        margin-bottom: 0;
+      }
+      
+      .container-output .table thead tr {
+        background: linear-gradient(135deg, var(--neon-purple) 0%, var(--neon-pink) 100%) !important;
+      }
+      
+      .container-output .table tbody tr {
+        border-color: rgba(176, 38, 255, 0.2);
+        transition: all 0.2s ease;
+      }
+      
+      .container-output .table tbody tr:hover {
+        background: rgba(176, 38, 255, 0.1);
+      }
+      
+      .container-output .alert {
+        background: var(--dark-card);
+        border: 1px solid rgba(0, 245, 255, 0.3);
+        color: #fff;
+      }
+      
       .footer {
-        background: white;
+        background: var(--dark-card);
+        backdrop-filter: blur(10px);
         padding: 1.5rem 0;
         margin-top: 3rem;
-        box-shadow: 0 -0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border-top: 1px solid rgba(0, 245, 255, 0.2);
       }
+      
+      .footer .btn-primary {
+        background: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-purple) 100%);
+        border: none;
+        box-shadow: 0 0 15px rgba(255, 45, 149, 0.3);
+      }
+      
+      .footer .btn-primary:hover {
+        box-shadow: 0 0 25px rgba(255, 45, 149, 0.5);
+      }
+      
+      .footer .btn-info {
+        background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+        border: none;
+        color: #fff;
+        box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+      }
+      
+      .footer .btn-info:hover {
+        box-shadow: 0 0 25px rgba(0, 245, 255, 0.5);
+      }
+      
       .contribute-section .d-inline-flex {
-        border: 1px dashed #198754;
+        background: var(--dark-card);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 245, 255, 0.4);
+        box-shadow: 0 0 20px rgba(0, 245, 255, 0.15);
+        transition: all 0.3s ease;
       }
+      
+      .contribute-section .d-inline-flex:hover {
+        border-color: rgba(0, 245, 255, 0.6);
+        box-shadow: 0 0 30px rgba(0, 245, 255, 0.25);
+      }
+      
+      .contribute-section .text-muted {
+        color: rgba(255, 255, 255, 0.7) !important;
+      }
+      
+      .contribute-section .text-success {
+        color: var(--neon-cyan) !important;
+      }
+      
+      .contribute-section .btn-success {
+        background: linear-gradient(135deg, var(--neon-cyan) 0%, #00c9a7 100%);
+        border: none;
+        color: #0a0a1a;
+        font-weight: 600;
+        box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+      }
+      
+      .contribute-section .btn-success:hover {
+        box-shadow: 0 0 25px rgba(0, 245, 255, 0.5);
+        color: #0a0a1a;
+      }
+      
       @media (max-width: 768px) {
         .contribute-section .d-inline-flex {
           flex-direction: column;
           border-radius: 1rem !important;
           padding: 1rem !important;
+        }
+        
+        .footer .d-flex {
+          flex-direction: column;
+          gap: 1rem;
+        }
+      }
+      
+      /* Floating particles effect */
+      .particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: -1;
+      }
+      
+      .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: var(--neon-cyan);
+        border-radius: 50%;
+        animation: float 15s infinite;
+        opacity: 0.6;
+        box-shadow: 0 0 10px var(--neon-cyan);
+      }
+      
+      @keyframes float {
+        0%, 100% { 
+          transform: translateY(100vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% { opacity: 0.6; }
+        90% { opacity: 0.6; }
+        100% {
+          transform: translateY(-100vh) rotate(720deg);
+          opacity: 0;
         }
       }
     </style>
@@ -114,6 +355,25 @@
 
   </head>
   <body>
+    <!-- Floating particles -->
+    <div class="particles" id="particles"></div>
+    <script>
+      (function() {
+        const container = document.getElementById('particles');
+        const colors = ['#00f5ff', '#ff2d95', '#b026ff', '#ff6b35'];
+        for (let i = 0; i < 20; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          particle.style.left = Math.random() * 100 + '%';
+          particle.style.animationDelay = Math.random() * 15 + 's';
+          particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+          particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+          particle.style.boxShadow = `0 0 10px ${particle.style.background}`;
+          container.appendChild(particle);
+        }
+      })();
+    </script>
+    
     <div class="hero-section">
       <div class="container text-center">
         <h1 class="display-4 mb-3">Tra cứu mã MCC - TungPun</h1>
@@ -306,7 +566,7 @@
               let table = `
                 <table class="table table-hover">
                   <thead>
-                    <tr style="background-color: #007BFF; color: #fff;">
+                    <tr style="background: linear-gradient(135deg, #b026ff 0%, #ff2d95 100%); color: #fff;">
                       <th scope="col">Tên</th>
                       <th scope="col">MCC</th>
                       <th scope="col">PTTT</th>
