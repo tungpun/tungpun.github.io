@@ -263,7 +263,7 @@
           `;
           return;
         }
-        fetch(`http://5.78.73.229:38080/mcc?keyword=${keyword}`)
+        fetch(`https://tra-cuu-mcc.vercel.app/mcc?keyword=${keyword}`)
           .then(response => response.json())
           .then(data => {
             const results = data.results;
