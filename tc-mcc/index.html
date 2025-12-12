@@ -318,6 +318,110 @@
           opacity: 0;
         }
       }
+      
+      /* Ad Banner Styles */
+      .ad-banner {
+        display: block !important;
+        margin: 1.5rem 0;
+        padding: 1.25rem 1.5rem;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff2d95 50%, #8b5cf6 100%);
+        border-radius: 1rem;
+        text-decoration: none !important;
+        color: white !important;
+        box-shadow: 0 8px 30px rgba(255, 45, 149, 0.4);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .ad-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2.5s infinite;
+      }
+      
+      @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+      }
+      
+      .ad-banner:hover {
+        transform: translateY(-3px) scale(1.01);
+        box-shadow: 0 12px 40px rgba(255, 45, 149, 0.5);
+        color: white !important;
+        text-decoration: none !important;
+      }
+      
+      .ad-content {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .ad-icon {
+        font-size: 2rem;
+        color: white;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+      }
+      
+      .ad-text {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .ad-highlight {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      }
+      
+      .ad-subtext {
+        display: block;
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.9);
+      }
+      
+      .ad-arrow {
+        font-size: 1.5rem;
+        color: white;
+        animation: bounceRight 1s ease-in-out infinite;
+      }
+      
+      @keyframes bounceRight {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(5px); }
+      }
+      
+      @media (max-width: 768px) {
+        .ad-content {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+        
+        .ad-arrow {
+          display: none;
+        }
+        
+        .ad-highlight {
+          font-size: 1.1rem;
+        }
+      }
     </style>
 
     <!-- SEO Meta Tags -->
@@ -400,6 +504,7 @@
       <div class="container-output"></div>
     </div>
 
+
     <div class="container">
         <div class="contribute-section text-center mt-4 mb-4">
         <div class="d-inline-flex align-items-center gap-2 px-4 py-3 bg-white rounded-pill shadow-sm">
@@ -410,6 +515,20 @@
           </a>
         </div>
       </div>
+    </div>
+
+    <!-- Ad Banner -->
+    <div class="container">
+      <a href="https://forms.gle/Ny8zGYA9LZ3oAXSeA" target="_blank" class="ad-banner" style="display: block; margin: 1.5rem 0; padding: 1.25rem 1.5rem; background: linear-gradient(135deg, #ff6b35 0%, #ff2d95 50%, #8b5cf6 100%); border-radius: 1rem; text-decoration: none; color: white; box-shadow: 0 8px 30px rgba(255, 45, 149, 0.4);">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
+          <span style="font-size: 2rem;">💳</span>
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <span style="font-size: 1.25rem; font-weight: 700; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">🎁 Đăng ký mở thẻ, nhận 200K</span>
+            <span style="font-size: 0.875rem; color: rgba(255,255,255,0.9);">Nhấn để đăng ký ngay!</span>
+          </div>
+          <span style="font-size: 1.5rem;">➡️</span>
+        </div>
+      </a>
     </div>
     
     <footer class="footer">
