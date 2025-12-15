@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/>
+      <stop offset="50%" style="stop-color:#ff2d95"/>
+      <stop offset="100%" style="stop-color:#ff6b35"/>
+    </linearGradient>
+    <linearGradient id="searchGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d4ff"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Credit Card -->
+  <rect x="2" y="6" width="22" height="16" rx="3" ry="3" fill="url(#cardGrad)"/>
+  
+  <!-- Card stripe -->
+  <rect x="2" y="10" width="22" height="4" fill="rgba(255,255,255,0.3)"/>
+  
+  <!-- Card chip -->
+  <rect x="5" y="14" width="5" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
+  
+  <!-- Magnifying glass -->
+  <circle cx="23" cy="22" r="6" fill="none" stroke="url(#searchGrad)" stroke-width="2.5"/>
+  <line x1="27" y1="26" x2="30" y2="29" stroke="url(#searchGrad)" stroke-width="2.5" stroke-linecap="round"/>
+  
+  <!-- Glass inner fill -->
+  <circle cx="23" cy="22" r="4" fill="rgba(0,212,255,0.2)"/>
+</svg>
