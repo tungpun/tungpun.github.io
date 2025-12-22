@@ -422,6 +422,103 @@
           font-size: 1.1rem;
         }
       }
+
+      /* PWA Install Button Styles */
+      .install-btn {
+        background: linear-gradient(135deg, var(--vibrant-cyan) 0%, var(--vibrant-green) 100%);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        transition: all 0.3s ease;
+        display: none;
+      }
+
+      .install-btn:hover {
+        box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        transform: translateY(-2px);
+        color: #fff;
+      }
+
+      .install-btn.show {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .install-btn i {
+        font-size: 1.1rem;
+      }
+
+      /* iOS Install Instructions Tooltip */
+      .ios-install-tooltip {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--card-bg);
+        border: 2px solid var(--vibrant-purple);
+        border-radius: 1rem;
+        padding: 1rem 1.5rem;
+        box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
+        z-index: 1001;
+        max-width: 90%;
+        text-align: center;
+        display: none;
+      }
+
+      .ios-install-tooltip.show {
+        display: block;
+        animation: slideUp 0.3s ease;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      }
+
+      .ios-install-tooltip .close-tooltip {
+        position: absolute;
+        top: 8px;
+        right: 12px;
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        color: var(--text-muted);
+        cursor: pointer;
+      }
+
+      .ios-install-tooltip p {
+        margin: 0;
+        color: var(--text-dark);
+      }
+
+      .ios-install-tooltip .share-icon {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background: linear-gradient(135deg, var(--vibrant-purple), var(--vibrant-pink));
+        border-radius: 4px;
+        vertical-align: middle;
+        position: relative;
+      }
+
+      .ios-install-tooltip .share-icon::before {
+        content: '↑';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+      }
     </style>
 
     <!-- SEO Meta Tags -->
@@ -444,6 +541,14 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="apple-touch-icon" href="assets/favicon.svg">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MCC Lookup">
 
     <!-- Canonical Link -->
     <link rel="canonical" href="https://tungpun.github.io/tc-mcc/">
@@ -538,10 +643,16 @@
       <div class="container">
         <div class="row">
           <div class="col-lg-12">
-            <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <button class="btn install-btn" id="installBtn" onclick="installPWA()">
+                <i class="bi bi-download"></i>
+                <span>Cài đặt ứng dụng</span>
+              </button>
+              
               <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" onclick="expandImage(this)" id="supportButton">
                 <i class="bi bi-heart-fill me-2"></i>Ủng hộ nhà phát triển
               </button>
+
               <a href="/qr" class="btn btn-info">
                 <i class="bi bi-qr-code me-2"></i>Tạo mã QR miễn phí và không quảng cáo
               </a>
@@ -717,6 +828,95 @@
           .catch(error => console.error('Error:', error));
       }
       
+    </script>
+
+    <!-- iOS Install Tooltip -->
+    <div class="ios-install-tooltip" id="iosTooltip">
+      <button class="close-tooltip" onclick="closeIosTooltip()">&times;</button>
+      <p>
+        <strong>Cài đặt ứng dụng trên iOS:</strong><br>
+        Nhấn vào <span class="share-icon"></span> (Share) ở thanh công cụ Safari,<br>
+        sau đó chọn <strong>"Thêm vào Màn hình chính"</strong>
+      </p>
+    </div>
+
+    <!-- PWA Installation Script -->
+    <script>
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js')
+            .then((registration) => {
+              console.log('Service Worker registered:', registration.scope);
+            })
+            .catch((error) => {
+              console.log('Service Worker registration failed:', error);
+            });
+        });
+      }
+
+      // PWA Install Prompt
+      let deferredPrompt;
+      const installBtn = document.getElementById('installBtn');
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent Chrome 67 and earlier from automatically showing the prompt
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        // Show the install button
+        installBtn.classList.add('show');
+        console.log('PWA install prompt ready');
+      });
+
+      function installPWA() {
+        if (deferredPrompt) {
+          // Show the install prompt
+          deferredPrompt.prompt();
+          // Wait for the user to respond to the prompt
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the install prompt');
+              installBtn.classList.remove('show');
+            } else {
+              console.log('User dismissed the install prompt');
+            }
+            deferredPrompt = null;
+          });
+        } else {
+          // Check if it's iOS
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+          const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+          
+          if (isIOS && !isInStandaloneMode) {
+            // Show iOS installation instructions
+            document.getElementById('iosTooltip').classList.add('show');
+          }
+        }
+      }
+
+      function closeIosTooltip() {
+        document.getElementById('iosTooltip').classList.remove('show');
+      }
+
+      // Hide install button if app is already installed
+      window.addEventListener('appinstalled', () => {
+        console.log('PWA was installed');
+        installBtn.classList.remove('show');
+        deferredPrompt = null;
+      });
+
+      // Check if running as standalone (already installed)
+      if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+        // App is already installed, hide the button
+        console.log('App is running in standalone mode');
+      } else {
+        // Check if it's iOS and show install button for iOS users
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+          installBtn.classList.add('show');
+        }
+      }
     </script>
     
   </body>

@@ -1,0 +1,22 @@
+{
+  "name": "Tra cứu mã MCC - TungPun",
+  "short_name": "Tra cứu MCC",
+  "description": "Tra cứu mã MCC để tối ưu cashback khi thanh toán thẻ tín dụng nhanh chóng và chính xác",
+  "start_url": "/tc-mcc/",
+  "scope": "/tc-mcc/",
+  "display": "standalone",
+  "background_color": "#f0f4ff",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "utilities"],
+  "lang": "vi"
+}
+
