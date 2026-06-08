@@ -320,8 +320,7 @@
         }
       }
       
-      /* Ad Banner Styles */
-      .ad-banner {
+      .promo-banner {
         display: block !important;
         margin: 1.5rem 0;
         padding: 1.25rem 1.5rem;
@@ -335,7 +334,7 @@
         overflow: hidden;
       }
       
-      .ad-banner::before {
+      .promo-banner::before {
         content: '';
         position: absolute;
         top: 0;
@@ -351,14 +350,14 @@
         100% { left: 100%; }
       }
       
-      .ad-banner:hover {
+      .promo-banner:hover {
         transform: translateY(-3px) scale(1.01);
         box-shadow: 0 12px 40px rgba(255, 45, 149, 0.5);
         color: white !important;
         text-decoration: none !important;
       }
       
-      .ad-content {
+      .promo-content {
         display: flex !important;
         align-items: center;
         justify-content: center;
@@ -367,7 +366,7 @@
         z-index: 1;
       }
       
-      .ad-icon {
+      .promo-icon {
         font-size: 2rem;
         color: white;
         animation: pulse 1.5s ease-in-out infinite;
@@ -378,13 +377,13 @@
         50% { transform: scale(1.1); }
       }
       
-      .ad-text {
+      .promo-text {
         display: flex !important;
         flex-direction: column;
         align-items: center;
       }
       
-      .ad-highlight {
+      .promo-highlight {
         display: block;
         font-size: 1.25rem;
         font-weight: 700;
@@ -393,14 +392,14 @@
         text-align: center;
       }
       
-      .ad-subtext {
+      .promo-subtext {
         display: block;
         font-size: 0.875rem;
         color: rgba(255,255,255,0.9);
         text-align: center;
       }
       
-      .ad-arrow {
+      .promo-arrow {
         font-size: 1.5rem;
         color: white;
         animation: bounceRight 1s ease-in-out infinite;
@@ -412,16 +411,16 @@
       }
       
       @media (max-width: 768px) {
-        .ad-content {
+        .promo-content {
           flex-direction: column;
           gap: 0.5rem;
         }
         
-        .ad-arrow {
+        .promo-arrow {
           display: none;
         }
         
-        .ad-highlight {
+        .promo-highlight {
           font-size: 1.1rem;
         }
       }
@@ -521,7 +520,113 @@
         font-size: 14px;
         font-weight: bold;
       }
+
+      .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      .popup-box {
+        background: var(--card-bg);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        max-width: 480px;
+        width: 90%;
+        position: relative;
+        box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+        border: 2px solid transparent;
+        background-image: linear-gradient(white, white), linear-gradient(135deg, var(--vibrant-purple), var(--vibrant-pink), var(--vibrant-orange));
+        background-origin: border-box;
+        background-clip: padding-box, border-box;
+        animation: popIn 0.3s ease;
+        text-align: center;
+      }
+
+      @keyframes popIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+
+      .popup-close {
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: color 0.2s;
+        z-index: 1;
+      }
+
+      .popup-close:hover {
+        color: var(--text-dark);
+      }
+
+      .popup-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--vibrant-purple), var(--vibrant-pink));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+      }
+
+      .popup-desc {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .popup-cta {
+        display: block;
+        text-decoration: none !important;
+        color: white !important;
+        background: linear-gradient(135deg, var(--vibrant-pink) 0%, var(--vibrant-purple) 100%);
+        border-radius: 1rem;
+        padding: 1rem 1.5rem;
+        box-shadow: 0 8px 30px rgba(255, 45, 149, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .popup-cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(255, 45, 149, 0.5);
+      }
+
+      .popup-cta-icon {
+        font-size: 1.8rem;
+      }
+
+      .popup-cta-highlight {
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+
+      .popup-cta-sub {
+        display: block;
+        font-size: 0.85rem;
+        opacity: 0.9;
+      }
     </style>
+
 
     <!-- SEO Meta Tags -->
     <meta name="description" content="Tra cứu mã MCC để tối ưu cashback khi thanh toán thẻ tín dụng nhanh chóng và chính xác. Tìm kiếm mã MCC của các thương hiệu phổ biến tại Việt Nam.">
